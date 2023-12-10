@@ -1,7 +1,6 @@
-const { MessageEmbed } = require('discord.js')
-const { readdirSync } = require('fs')
-const path = require("path")
+const { EmbedBuilder } = require('discord.js')
 const vars = require("../_general/vars.js")
+const { loadAllCommands } = require('../../utils/load_commands.js')
 
 module.exports.help = {
 	name : 'help',
@@ -9,30 +8,18 @@ module.exports.help = {
 }
 
 module.exports.run = (message) => {
-	if(!message.member.hasPermission('MANAGE_MESSAGES')) {
-		return message.channel.send("You don't have the permissions to do that")
-	}
+	// if(!message.member.hasPermission('MANAGE_MESSAGES')) {
+	// 	return message.channel.send("You don't have the permissions to do that")
+	// }
 
-	let listOfCommands = ""
-	const loadAllName = (dir = path.join(__dirname, '..')) => {
-		readdirSync(dir).forEach(dirs => {
-			console.log(dirs)
-			if(!dirs.match("_general")){
-				commands = readdirSync(`${dir}/${dirs}/`).filter(files => files.endsWith('.js'))
-				for (file of commands){
-					const getFile = require(`${dir}/${dirs}/${file}`)
-					listOfCommands +=  `• **${getFile.help.name}** : ${getFile.help.description}\n`
-				}
-			}	
-		})
-	}
-	loadAllName()
+	let listOfCommands = loadAllCommands().map(command => `• **${command.name}** : ${command.description}\n`).join('')
 
-	const helpEmbed = new MessageEmbed()
+	const helpEmbed = new EmbedBuilder()
         .setColor(vars.primaryColor)
         .setDescription(listOfCommands)
-		.setAuthor(message.author.tag, message.author.avatarURL())
-        .setFooter(`Need help? Contact Samy#4913`, vars.reecoom)
+		.setAuthor({ name: message.member.nickname })
+		.setTimestamp()
+        .setFooter({ text: 'Need help? Contact samouik' , iconURL: vars.reecoom })
 
-	message.channel.send(helpEmbed)
+	message.reply({ embeds: [helpEmbed] })
 }
