@@ -2,6 +2,8 @@ const { Client, REST, GatewayIntentBits } = require('discord.js')
 const { loadAllCommands } = require('./utils/load_commands.js')
 const { initializationClient } = require('./utils/initialization_client.js')
 const { handleInteraction } = require('./utils/handle_interactions.js')
+const models = require('./data/models.js')
+const sequelize = require('sequelize')
 require('dotenv').config();
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
@@ -13,11 +15,18 @@ if (!DISCORD_TOKEN || !CLIENT_ID) {
     process.exit(1)
 }
 
+// Load all commands
+const commands = loadAllCommands();
 
-const commands = loadAllCommands()
+// Initialize database
+(async () => {
+    await models.init()
+})()
 
+// Initialize client
 const rest = new REST({ version: '10' }).setToken(DISCORD_TOKEN);
-
 initializationClient(client, rest, DISCORD_TOKEN, CLIENT_ID, commands).catch(console.error);
+
+// Handle interactions
 handleInteraction(client, commands).catch(console.error);
 
