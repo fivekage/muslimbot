@@ -56,6 +56,7 @@ module.exports.init = async () => {
     });
 
     Users.hasOne(Subscriptions);
+    Subscriptions.belongsTo(Users)
 
     await Users.sync({ alter: true, benchmark: true})
     await Subscriptions.sync({ alter: true, benchmark: true})

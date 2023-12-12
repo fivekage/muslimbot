@@ -3,7 +3,7 @@ const { loadAllCommands } = require('./utils/load_commands.js')
 const { initializationClient } = require('./utils/initialization_client.js')
 const { handleInteraction } = require('./utils/handle_interactions.js')
 const models = require('./data/models.js')
-const sequelize = require('sequelize')
+const { schedulePrayers } = require('./utils/schedule_notifications.js')
 require('dotenv').config();
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
@@ -21,6 +21,7 @@ const commands = loadAllCommands();
 // Initialize database
 (async () => {
     await models.init()
+    schedulePrayers(client)
 })()
 
 // Initialize client
