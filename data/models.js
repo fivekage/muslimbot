@@ -3,6 +3,7 @@ require('dotenv').config();
 
 const sequelizeInstance = () => {
     const DB_HOST = process.env.DB_HOST
+    const DB_DATABASE = process.env.DB_DATABASE
     const DB_USERNAME = process.env.DB_USERNAME
     const DB_PASSWORD = process.env.DB_PASSWORD
 
@@ -16,7 +17,7 @@ const sequelizeInstance = () => {
     const connectionStr = `mariadb://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}/muslimbot`
     return new Sequelize(connectionStr, {
         host: DB_HOST,
-        database: 'muslimbot',
+        database: DB_DATABASE || 'muslimbot',
         username: DB_USERNAME,
         password: DB_PASSWORD,
         dialect: 'mariadb'
