@@ -14,11 +14,11 @@ module.exports.help = {
     ],
 }
 
-module.exports.run =  (message) => {
+module.exports.run =  (interaction) => {
     
-    const query = message.options.getString('city').toUpperCase()
+    const query = interaction.options.getString('city').toUpperCase()
     const city = query.charAt(0).toUpperCase() + query.slice(1).toLowerCase()
-    if(!city) return message.reply("You must specify a city")
+    if(!city) return interaction.reply("You must specify a city")
     
     const API_ENDPOINT = `http://api.aladhan.com/v1/timingsByAddress?address=${city}`
 
@@ -37,7 +37,7 @@ module.exports.run =  (message) => {
                 const embed = new EmbedBuilder()
                     .setTitle(`Prayer in ${city}`)
                     .setColor(vars.primaryColor)
-                    .setAuthor({ name: `For you ${message.member.nickname}` })
+                    .setAuthor({ name: `For you ${interaction.member.nickname}` })
                     .setThumbnail("https://cdn-icons-png.flaticon.com/512/2714/2714091.png")
                     .addFields(
                         { name: ':clock1: **Imsak**', value: ` ${data['timings']['Imsak']}`, inline: true },
@@ -47,14 +47,14 @@ module.exports.run =  (message) => {
                         { name: ':clock5: **Maghrib**', value: `${data['timings']['Maghrib']}`, inline: true },
                         { name: ':clock6: **Isha**', value: `${data['timings']['Isha']}`, inline: true },
                     )
-                    .setFooter({text: 'Islam Bot 🕋'})
+                    .setFooter({text: 'MuslimBot 🕋 - For any help type /help command'})
                     .setTimestamp()
-                return message.reply({ embeds: [embed] })
+                return interaction.reply({ embeds: [embed] })
             })
             .catch(error => console.log(error));
     }catch(error){
         console.warn("Error during retrieve prayers",error)
-        return message.reply("City not found")
+        return interaction.reply("City not found")
     }
 }
 
