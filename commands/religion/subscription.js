@@ -1,4 +1,4 @@
-const { ButtonBuilder, ButtonStyle, SlashCommandBuilder, ActionRowBuilder } = require('discord.js');
+const { ButtonBuilder, ButtonStyle, EmbedBuilder, ActionRowBuilder } = require('discord.js');
 const { Users, Subscriptions } = require('../../data/models.js');
 
 module.exports.help = {
@@ -34,6 +34,10 @@ module.exports.run = async (interaction) => {
     const row = new ActionRowBuilder()
         .addComponents(cancel, confirm);
 
+    const replyEmbed = new EmbedBuilder()
+        .setTitle('Thank you ! 🙏')
+        .setDescription('You will receive a message to confirm your subscription');
+    await interaction.reply({ embeds: [replyEmbed], ephemeral: true });
     const response = await interaction.user.send({
         content: `Are you sure you want to receive notifications for prayers in ${city} ?`,
         components: [row],
@@ -52,7 +56,7 @@ module.exports.run = async (interaction) => {
 
             let user = await Users().findOne({ where: { userId: interaction.user.id } })
             if(!user) {
-                user = Users().build({ userId: interaction.user.id })
+                user = Users().build({ userId: interaction.user.id, guildId: interaction.guildId })
             }
             await user.save()
 

@@ -43,6 +43,10 @@ module.exports.init = async () => {
             type: DataTypes.STRING,
             unique: true,
         },
+        guildId: {
+            type: DataTypes.STRING,
+            allowNull: true,
+        }
     });
 
     const Subscriptions = sequelize.define('Subscriptions', {
@@ -55,11 +59,26 @@ module.exports.init = async () => {
         subscriptionEnabled: DataTypes.BOOLEAN,
     });
 
+    const Notifications = sequelize.define('Notifications', {
+        id: {
+            type: DataTypes.INTEGER,
+            autoIncrement: true,
+            primaryKey: true
+        },
+        prayer: DataTypes.STRING,
+    });
+
     Users.hasOne(Subscriptions);
     Subscriptions.belongsTo(Users)
 
+    Users.hasMany(Notifications);
+    Notifications.belongsTo(Users)
+    Subscriptions.hasMany(Notifications);
+    Notifications.belongsTo(Subscriptions)
+
     await Users.sync({ alter: true, benchmark: true})
     await Subscriptions.sync({ alter: true, benchmark: true})
+    await Notifications.sync({ alter: true, benchmark: true})
 }
 
 module.exports.Users = () => {
@@ -68,4 +87,8 @@ module.exports.Users = () => {
 
 module.exports.Subscriptions = () => {
     return sequelize.models["Subscriptions"]
+}
+
+module.exports.Notifications = () => {
+    return sequelize.models["Notifications"]
 }

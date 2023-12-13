@@ -47,7 +47,7 @@ module.exports.run =  (interaction) => {
                         { name: ':clock5: **Maghrib**', value: `${data['timings']['Maghrib']}`, inline: true },
                         { name: ':clock6: **Isha**', value: `${data['timings']['Isha']}`, inline: true },
                     )
-                    .setFooter({text: 'Islam Bot 🕋'})
+                    .setFooter({text: 'MuslimBot 🕋 - For any help type /help command'})
                     .setTimestamp()
                 return interaction.reply({ embeds: [embed] })
             })
