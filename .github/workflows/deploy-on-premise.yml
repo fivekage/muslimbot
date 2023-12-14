@@ -71,6 +71,8 @@ jobs:
             script: |
               echo "Starting Docker Container..."
               cd ${{ env.WORKDIR }} 
+              sudo docker stop muslimbot
+              sudo docker rm muslimbot
               sudo docker run -d --name muslimbot --env-file .env --restart=always samy266/muslimbot:${{ steps.vars.outputs.sha_short }}
               echo "Docker Container Started Successfully"
               echo "Remove .env file..."
