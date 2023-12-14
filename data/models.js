@@ -57,6 +57,7 @@ module.exports.init = async () => {
             primaryKey: true
         },
         city: DataTypes.STRING,
+        country: DataTypes.STRING,
         subscriptionEnabled: DataTypes.BOOLEAN,
     });
 

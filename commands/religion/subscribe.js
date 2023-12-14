@@ -2,7 +2,7 @@ const { ButtonBuilder, ButtonStyle, EmbedBuilder, ActionRowBuilder } = require('
 const { Users, Subscriptions } = require('../../data/models.js');
 
 module.exports.help = {
-    name : 'subscription',
+    name : 'subscribe',
     description : "Subscription to get notifications for each prayer of the day according to the desired city",
     options: [
         {
@@ -16,8 +16,12 @@ module.exports.help = {
 
 module.exports.run = async (interaction) => {
 
-    const query = interaction.options.getString('city').toUpperCase()
-    const city = query.charAt(0).toUpperCase() + query.slice(1).toLowerCase()
+    const queryCountry = interaction.options.getString('country')
+    const queryCity = interaction.options.getString('city')
+    const city = queryCity.charAt(0).toUpperCase() + queryCity.slice(1).toLowerCase()
+    const country = queryCountry.charAt(0).toUpperCase() + queryCountry.slice(1).toLowerCase()
+
+    if(!city || !country) return interaction.reply("You must specify a city and a country")
 
     const confirm = new ButtonBuilder()
         .setCustomId('confirm')

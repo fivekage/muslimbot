@@ -1,31 +1,18 @@
 const schedule = require('node-schedule');
 const rule = new schedule.RecurrenceRule();
 const { Users, Subscriptions, Notifications } = require('../data/models.js');
-const { EmbedBuilder, ButtonStyle, ActionRowBuilder, ComponentType } = require('discord.js')
+const { EmbedBuilder} = require('discord.js')
 const vars = require('../commands/_general/vars.js')
 
-const schedulePrayerNotifications = (client, subscription, prayer, prayerTime) => {
-    const [hours, minutes] = prayerTime.split(':').map(Number);
+const schedulePrayerNotifications = (client, subscription, prayer, prayerDateTime) => {
     const userid = subscription.User.userId
-    const userid_db = subscription.UserId
-    const date = new Date()
-    date.setHours(hours, minutes, 0, 0)
-
-    if(date < new Date()) {
+ 
+    if(prayerDateTime < new Date()) {
         console.warn(`Prayer ${prayer} already passed for user ${userid}`)
         return
     }
-    const actionRow = new ActionRowBuilder({
-        components: [
-            {
-                custom_id: "btn_unsubscribe",
-                label: "Unsubscribe",
-                style: ButtonStyle.Danger,
-                type: ComponentType.Button,
-            },
-        ],
-    })
-    schedule.scheduleJob(date, function(p){
+
+    schedule.scheduleJob(prayerDateTime, function(p){
         client.users.fetch(userid).then(user => {
             const embed = new EmbedBuilder()
                 .setTitle(`${p} 🕌`)
@@ -34,32 +21,32 @@ const schedulePrayerNotifications = (client, subscription, prayer, prayerTime) =
                 .setTimestamp()
                 .setFooter({text: 'MuslimBot 🕋 - For any help type /help command'});
 
-            user.send({ embeds: [embed], components: [actionRow] }).catch(error => {
+            user.send({ embeds: [embed] }).catch(error => {
                 console.error(`Error during send notification for user ${userid}`, error)
             })
 
-            Notifications().create({ prayer: p, UserId: userid_db, SubscriptionId: subscription.id }).catch(error => {
+            Notifications().create({ prayer: p, UserId: subscription.UserId, SubscriptionId: subscription.id }).catch(error => {
                 console.error(`Error during create notification for user ${userid}`, error)
             })
         })
     }.bind(null,prayer));
 
-    console.log(`Job ${prayer} scheduled at ${date.toLocaleString()} for user ${userid}`);
+    console.log(`Job ${prayer} scheduled at ${prayerDateTime.toLocaleString()} for user ${userid}`);
 }
 
 module.exports.schedulePrayers = (client) => {
-    rule.hour = 1;
+    rule.hour = 2;
     rule.minute = 0;
     rule.tz = 'Etc/UTC';
     // TEST : rule.minute = new schedule.Range(0, 1); // Todo: change to 0
     const job = schedule.scheduleJob(rule, function(){
         Subscriptions().findAll({ where: { subscriptionEnabled: true }, include: Users() }).then(subscriptions => {
             subscriptions.forEach(subscription => {
-                getPrayerTimes(subscription.city).then(prayers => {
+                getPrayerTimes(subscription.city, subscription.country).then(prayers => {
                     Object.keys(prayers).forEach(prayer => {
                         if(Object.keys(prayersMessages).includes(prayer)) {
-                            const prayerTime = prayers[prayer]
-                            schedulePrayerNotifications(client, subscription, prayer, prayerTime)
+                            const prayerDateTime = new Date(prayers[prayer])
+                            schedulePrayerNotifications(client, subscription, prayer, prayerDateTime)
                         }
                     })
                 })
@@ -70,8 +57,8 @@ module.exports.schedulePrayers = (client) => {
     console.log(`Job ${job.name} scheduled at ${job.nextInvocation()}`);
 }
 
-const getPrayerTimes = async (city) => {
-    const API_ENDPOINT = `http://api.aladhan.com/v1/timingsByAddress?address=${city}`
+const getPrayerTimes = async (city, country) => {
+    const API_ENDPOINT = `http://api.aladhan.com/v1/timingsByAddress?address=${city},${country}&iso8601=1`
     try{
         const response = await fetch(API_ENDPOINT)
         const data = await response.json()
@@ -84,11 +71,41 @@ const getPrayerTimes = async (city) => {
 }
 
 const prayersMessages = {
-    'Fajr': ["Wake up, it's Fajr time! Begin your day with the remembrance of Allah."],
-    'Dhuhr': ["It's Dhuhr time! Take a few minutes to renew your faith.", "Dhuhr is here, take a break from the worldly hustle and reconnect with your Creator."],
-    'Asr': ["It's Asr time! Take a few minutes to renew your faith.", "Asr is here, take a break from the worldly hustle and reconnect with your Creator.", "Time for Asr, a peaceful pause in your day for prayer."],
-    'Maghrib': ["The sun has set, and it's time for Maghrib. Reflect on your day and thank Allah for His blessings."],
-    'Isha': ["Night has fallen, and it's time for Isha. Seek forgiveness and pray for a peaceful night."]
+    'Fajr': [
+        "Embrace the tranquility of Fajr prayer and start your day with a peaceful heart.",
+        "The world is still, and it's Fajr time. Begin your day with devotion and gratitude.",
+        "The dawn breaks, and Fajr prayer beckons. Begin your day with devotion and humility.",
+        "As the world awakens, answer the call of Fajr prayer with a heart full of gratitude."
+      ],
+      
+      'Dhuhr': [
+        "Pause for Dhuhr prayer, renew your intentions, and seek Allah's guidance.",
+        "Dhuhr prayer is an opportunity to reset your focus and find strength in prayer.",
+        "In the stillness of Dhuhr, take a moment to reflect and reconnect with your Creator.",
+        "Dhuhr is more than a prayer; it's a conversation with Allah, a moment of introspection."
+      ],
+      
+      'Asr': [
+        "Asr is a moment to center yourself and find solace in prayer.",
+        "Asr prayer is a reminder to take a spiritual break amidst life's demands.",
+        "Amidst the afternoon's hustle, pause for Asr prayer—a sanctuary for the soul.",
+        "Asr prayer is a gentle reminder in the midst of life's chaos—find solace in prayer.",
+        "Amidst the afternoon's hustle, pause for Asr prayer—a sanctuary for the soul.",
+      ],
+      
+      'Maghrib': [
+        "As the day concludes, Maghrib prayer offers a chance for reflection and gratitude.",
+        "Witness the beauty of Maghrib and express thanks for the day's blessings.",
+        "With the setting sun comes Maghrib, a time to reflect on the day's journey.",
+        "Maghrib prayer is a bridge between day and night—a moment to express gratitude."
+      ],
+      
+      'Isha': [
+        "Embrace the stillness of the night with Isha prayer. Seek forgiveness and peace.",
+        "Night has fallen, and Isha is an intimate conversation with Allah.",
+        "Under the night sky, embrace the tranquility of Isha prayer. Seek peace within.",
+        "As the stars emerge, let Isha prayer guide you to a serene and reflective state."
+      ]
 }
 
 function getRandomInt(max) {
