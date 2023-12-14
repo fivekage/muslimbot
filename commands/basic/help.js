@@ -17,7 +17,7 @@ module.exports.run = (message) => {
 	const helpEmbed = new EmbedBuilder()
         .setColor(vars.primaryColor)
         .setDescription(listOfCommands)
-		.setAuthor({ name: message.member.nickname })
+		.setAuthor({ name: message.member ? message.member.nickname : message.user.username })
 		.setTimestamp()
         .setFooter({ text: 'Need help? Contact samouik' , iconURL: vars.reecoom })
 

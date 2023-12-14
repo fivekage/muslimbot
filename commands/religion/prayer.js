@@ -20,14 +20,14 @@ module.exports.help = {
     ],
 }
 
-module.exports.run =  (interaction) => {
+module.exports.run =  (message) => {
     
-    const queryCountry = interaction.options.getString('country')
-    const queryCity = interaction.options.getString('city')
+    const queryCountry = message.options.getString('country')
+    const queryCity = message.options.getString('city')
     const city = queryCity.charAt(0).toUpperCase() + queryCity.slice(1).toLowerCase()
     const country = queryCountry.charAt(0).toUpperCase() + queryCountry.slice(1).toLowerCase()
     
-    if(!city || !country) return interaction.reply("You must specify a city and a country")
+    if(!city || !country) return message.reply("You must specify a city and a country")
     
     const API_ENDPOINT = `http://api.aladhan.com/v1/timingsByAddress?address=${city},${country}`
     try{
@@ -35,7 +35,7 @@ module.exports.run =  (interaction) => {
         fetch(API_ENDPOINT)
             .then(response => {
                 if (!response.ok) {
-                    return interaction.reply({ text: "Address not found", ephemeral: true })
+                    return message.reply({ text: "Address not found", ephemeral: true })
                 }
                 return response.json();
             })
@@ -45,7 +45,7 @@ module.exports.run =  (interaction) => {
                 const embed = new EmbedBuilder()
                     .setTitle(`Prayer in ${city}, ${country}`)
                     .setColor(vars.primaryColor)
-                    .setAuthor({ name: `For you ${interaction.member ? interaction.member.nickname : interaction.user.username}` })
+                    .setAuthor({ name: `For you ${message.member ? message.member.nickname : message.user.username}` })
                     .setThumbnail("https://cdn-icons-png.flaticon.com/512/2714/2714091.png")
                     .addFields(
                         { name: ':clock1: **Imsak**', value: ` ${data['timings']['Imsak']}`, inline: true },
@@ -57,12 +57,12 @@ module.exports.run =  (interaction) => {
                     )
                     .setFooter({text: 'MuslimBot 🕋 - For any help type /help command'})
                     .setTimestamp()
-                return interaction.reply({ embeds: [embed] })
+                return message.reply({ embeds: [embed] })
             })
             .catch(error => console.log(error));
     }catch(error){
         console.warn("Error during retrieve prayers",error)
-        return interaction.reply("City not found")
+        return message.reply("City not found")
     }
 }
 

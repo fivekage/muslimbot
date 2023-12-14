@@ -8,8 +8,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
     environment: heroku
-    outputs:
-        package-version: ${{ steps.package-version.outputs.version }}
     steps:
         - uses: actions/checkout@v2
       

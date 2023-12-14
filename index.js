@@ -2,6 +2,7 @@ const { Client, REST, GatewayIntentBits } = require('discord.js')
 const { loadAllCommands } = require('./utils/load_commands.js')
 const { initializationClient } = require('./utils/initialization_client.js')
 const { handleInteraction } = require('./utils/handle_interactions.js')
+const { handleNewGuild } = require('./utils/handle_newguild.js')
 const models = require('./data/models.js')
 const { schedulePrayers } = require('./utils/schedule_notifications.js')
 require('dotenv').config();
@@ -30,4 +31,5 @@ initializationClient(client, rest, DISCORD_TOKEN, CLIENT_ID, commands).catch(con
 
 // Handle interactions
 handleInteraction(client, commands).catch(console.error);
+handleNewGuild(client).catch(console.error);
 
