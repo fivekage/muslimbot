@@ -11,22 +11,19 @@ Welcome to the Islamic Prayer Time Discord Bot! This bot is designed to assist t
 
 ## Getting Started
 
-### Prerequisites
+### Adding the Bot to Your Discord Server
 
-- Node.js >= 20 installed on your machine.
-- Discord bot token. You can obtain one by creating a new bot on the [Discord Developer Portal](https://discord.com/developers/applications).
-
-### Installation
-
-1. Clone the repository.
-2. Install dependencies using `npm install`.
-3. Create a `.env` file in the root directory of the project and add the following environment variables:
-
-```env
-DISCORD_TOKEN=<your_discord_bot_token>
-```
-
-4. Run the bot using `npm run start`.
+To add the Islamic Prayer Time Discord Bot to your server, simply click [here](https://top.gg/bot/YOUR_BOT_ID) and follow the instructions on the top.gg page.
 
 ## Commands
-Incoming
+
+- **Get Prayer Times for the current day for your city:**
+`/prayer <city>`
+
+- **Subscribe for prayers for your city:**
+`/subscribe <city>`
+
+
+### Note
+
+This bot is hosted, and you can add it to your Discord server by following the link provided above.

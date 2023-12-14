@@ -11,33 +11,41 @@ module.exports.help = {
             type: 3,
             required: true,
         },
+        {
+            name: 'country',
+            description: 'The country you want to know the prayer times',
+            type: 3,
+            required: true,
+        },
     ],
 }
 
 module.exports.run =  (interaction) => {
     
-    const query = interaction.options.getString('city').toUpperCase()
-    const city = query.charAt(0).toUpperCase() + query.slice(1).toLowerCase()
-    if(!city) return interaction.reply("You must specify a city")
+    const queryCountry = interaction.options.getString('country')
+    const queryCity = interaction.options.getString('city')
+    const city = queryCity.charAt(0).toUpperCase() + queryCity.slice(1).toLowerCase()
+    const country = queryCountry.charAt(0).toUpperCase() + queryCountry.slice(1).toLowerCase()
     
-    const API_ENDPOINT = `http://api.aladhan.com/v1/timingsByAddress?address=${city}`
-
+    if(!city || !country) return interaction.reply("You must specify a city and a country")
+    
+    const API_ENDPOINT = `http://api.aladhan.com/v1/timingsByAddress?address=${city},${country}`
     try{
         // Not tested, might not work
         fetch(API_ENDPOINT)
             .then(response => {
                 if (!response.ok) {
-                    throw Error(response.statusText);
+                    return interaction.reply({ text: "Address not found", ephemeral: true })
                 }
                 return response.json();
             })
             .then(response => {
                 const data = response['data']
-       
+                
                 const embed = new EmbedBuilder()
-                    .setTitle(`Prayer in ${city}`)
+                    .setTitle(`Prayer in ${city}, ${country}`)
                     .setColor(vars.primaryColor)
-                    .setAuthor({ name: `For you ${interaction.member.nickname}` })
+                    .setAuthor({ name: `For you ${interaction.member ? interaction.member.nickname : interaction.user.username}` })
                     .setThumbnail("https://cdn-icons-png.flaticon.com/512/2714/2714091.png")
                     .addFields(
                         { name: ':clock1: **Imsak**', value: ` ${data['timings']['Imsak']}`, inline: true },

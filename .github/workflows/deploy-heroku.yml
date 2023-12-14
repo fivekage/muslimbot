@@ -3,10 +3,7 @@ name: Deploy to Heroku
 on:
   push:
     branches:
-      - main # Changing the branch here would also work
-
-
-
+      - heroku # Changing the branch here would also work
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -15,7 +12,7 @@ jobs:
         package-version: ${{ steps.package-version.outputs.version }}
     steps:
         - uses: actions/checkout@v2
-        
+      
         - uses: akhileshns/heroku-deploy@v3.12.14 
           with:
             heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
@@ -28,16 +25,3 @@ jobs:
             HD_DB_HOST: ${{secrets.DB_HOST}}
             HD_DB_USERNAME: ${{secrets.DB_USERNAME}}
             HD_DB_PASSWORD: ${{secrets.DB_PASSWORD}}
-
-        - name: Extract Package Version
-          id: package-version
-          run: echo "::set-output name=version::$(jq -r '.version' package.json)"
-
-        - name: package-version-to-git-tag
-          uses: pkgdeps/git-tag-action@v2
-          with:
-            github_token: ${{ secrets.GITHUB_TOKEN }}
-            github_repo: ${{ github.repository }}
-            git_commit_sha: ${{ github.sha }}
-            version: ${{ steps.package-version.outputs.version }}
-            git_tag_prefix: "v"

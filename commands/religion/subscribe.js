@@ -2,7 +2,7 @@ const { ButtonBuilder, ButtonStyle, EmbedBuilder, ActionRowBuilder } = require('
 const { Users, Subscriptions } = require('../../data/models.js');
 
 module.exports.help = {
-    name : 'subscription',
+    name : 'subscribe',
     description : "Subscription to get notifications for each prayer of the day according to the desired city",
     options: [
         {
@@ -11,13 +11,23 @@ module.exports.help = {
             type: 3,
             required: true,
         },
+        {
+            name: 'country',
+            description: 'The country you want to know the prayer times',
+            type: 3,
+            required: true,
+        },
     ],
 }
 
 module.exports.run = async (interaction) => {
 
-    const query = interaction.options.getString('city').toUpperCase()
-    const city = query.charAt(0).toUpperCase() + query.slice(1).toLowerCase()
+    const queryCountry = interaction.options.getString('country')
+    const queryCity = interaction.options.getString('city')
+    const city = queryCity.charAt(0).toUpperCase() + queryCity.slice(1).toLowerCase()
+    const country = queryCountry.charAt(0).toUpperCase() + queryCountry.slice(1).toLowerCase()
+
+    if(!city || !country) return interaction.reply("You must specify a city and a country")
 
     const confirm = new ButtonBuilder()
         .setCustomId('confirm')
@@ -49,25 +59,30 @@ module.exports.run = async (interaction) => {
         const confirmation = await response.awaitMessageComponent({ filter: collectorFilter, time: 60000 });
         
         if (confirmation.customId === 'confirm') {
-            confirmation.update({ content: `You will receive notifications for prayers in ${city}`, components: [] })
-            await confirmation.message.react('✅');
-            confirm.setDisabled(true);
-            cancel.setDisabled(true);
-
+            
             let user = await Users().findOne({ where: { userId: interaction.user.id } })
             if(!user) {
                 user = Users().build({ userId: interaction.user.id, guildId: interaction.guildId })
-            }
-            await user.save()
-
-            let subscription = await Subscriptions().findOne({ where: { UserId: user.id, city: city } })
-            if(!subscription) {
-                subscription = Subscriptions().build({ subscriptionEnabled: true,city: city, UserId: user.id })
+                await user.save()
             }
 
+            let subscription = await Subscriptions().findOne({ where: { UserId: user.id, city: city, country: country } })
+            if(subscription) {
+                console.log("Notification for prayer in", city, "already activated for", interaction.user.username)
+                await confirmation.update({ content: `You already receive notifications for prayers in ${city}, ${country}`, components: [] })
+                return
+            }
+
+            // Create subscription
+            subscription = Subscriptions().build({ subscriptionEnabled: true,city: city, country: country, UserId: user.id })
             await subscription.save()
-
             console.log("Notification for prayer in", city, "activated for", interaction.user.username)
+
+            // Confirmation message
+            await confirmation.update({ content: `You will receive notifications for prayers in ${city}`, components: [] })
+            await confirmation.message.react('✅');
+            confirm.setDisabled(true);
+            cancel.setDisabled(true);
             return;
         } else if (confirmation.customId === 'cancel') {
             await confirmation.update({ content: 'Action cancelled', components: [] });
