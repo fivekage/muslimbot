@@ -3,7 +3,7 @@ require('dotenv').config();
 
 const sequelizeInstance = () => {
     const DB_HOST = process.env.DB_HOST
-    const DB_DATABASE = process.env.DB_DATABASE
+    const DB_DATABASE = process.env.DB_DATABASE ?? 'muslimbot'
     const DB_USERNAME = process.env.DB_USERNAME
     const DB_PASSWORD = process.env.DB_PASSWORD
 
@@ -12,12 +12,12 @@ const sequelizeInstance = () => {
         process.exit(1)
     }
 
-    console.log("Database Host :", DB_HOST)
-    console.log("Database Username", DB_USERNAME)
-    const connectionStr = `mariadb://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}/muslimbot`
+    console.log("Database Used :", DB_DATABASE)
+    
+    const connectionStr = `mariadb://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}/${DB_DATABASE}`
     return new Sequelize(connectionStr, {
         host: DB_HOST,
-        database: DB_DATABASE || 'muslimbot',
+        database: DB_DATABASE,
         username: DB_USERNAME,
         password: DB_PASSWORD,
         dialect: 'mariadb'
@@ -78,9 +78,14 @@ module.exports.init = async () => {
     Subscriptions.hasMany(Notifications);
     Notifications.belongsTo(Subscriptions)
 
+    if(process.env.NODE_ENV != "production") {
+        await sequelize.sync({ benchmark: true, force: true, match: /.*_dev$/})
+    }
+    
     await Users.sync({ alter: true, benchmark: true})
     await Subscriptions.sync({ alter: true, benchmark: true})
     await Notifications.sync({ alter: true, benchmark: true})
+
 }
 
 module.exports.Users = () => {

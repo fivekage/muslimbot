@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main # Changing the branch here would also work
-
 env:
   WORKDIR: /home/${{ secrets.SSH_USERNAME }}/muslimbot
   env: production
@@ -33,6 +32,7 @@ jobs:
             key: ${{ secrets.SSH_PRIVATE_KEY }}
             port: ${{ secrets.SSH_PORT }}
             script: |
+              mkdir -p ${{ env.WORKDIR }}
               cd ${{ env.WORKDIR }}
               [ -e .env ] && rm .env
               echo "NODE_ENV=${{ env.env }}" >> .env
@@ -72,6 +72,10 @@ jobs:
               echo "Starting Docker Container..."
               cd ${{ env.WORKDIR }} 
               sudo docker run -d --name muslimbot --env-file .env --restart=always samy266/muslimbot:${{ steps.vars.outputs.sha_short }}
+              echo "Docker Container Started Successfully"
+              echo "Remove .env file..."
+              rm .env
+              echo "Done"
 
         - name: Extract Package Version
           id: package-version

@@ -4,6 +4,6 @@ module.exports.help = {
 }
 
 module.exports.run =  (interaction) => {
-    return interaction.reply({ text: "Not implemented yet" })
+    return interaction.reply({ content: "Not implemented yet, incoming 🙏" })
 }
 

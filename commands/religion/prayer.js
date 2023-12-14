@@ -30,7 +30,6 @@ module.exports.run =  (interaction) => {
     if(!city || !country) return interaction.reply("You must specify a city and a country")
     
     const API_ENDPOINT = `http://api.aladhan.com/v1/timingsByAddress?address=${city},${country}`
-
     try{
         // Not tested, might not work
         fetch(API_ENDPOINT)
@@ -42,11 +41,11 @@ module.exports.run =  (interaction) => {
             })
             .then(response => {
                 const data = response['data']
-       
+                
                 const embed = new EmbedBuilder()
                     .setTitle(`Prayer in ${city}, ${country}`)
                     .setColor(vars.primaryColor)
-                    .setAuthor({ name: `For you ${interaction.member ? interaction.member.nickname : interaction.author.username}` })
+                    .setAuthor({ name: `For you ${interaction.member ? interaction.member.nickname : interaction.user.username}` })
                     .setThumbnail("https://cdn-icons-png.flaticon.com/512/2714/2714091.png")
                     .addFields(
                         { name: ':clock1: **Imsak**', value: ` ${data['timings']['Imsak']}`, inline: true },
