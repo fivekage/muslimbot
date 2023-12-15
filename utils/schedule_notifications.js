@@ -38,7 +38,7 @@ module.exports.schedulePrayers = (client) => {
     rule.hour = 2;
     rule.minute = 0;
     rule.tz = 'Etc/UTC';
-    // TEST : rule.minute = new schedule.Range(0, 1); // Todo: change to 0
+    //rule.minute = new schedule.Range(0, 59); // Todo: change to 0
     const job = schedule.scheduleJob(rule, function(){
         Subscriptions().findAll({ where: { subscriptionEnabled: true }, include: Users() }).then(subscriptions => {
             subscriptions.forEach(subscription => {
@@ -54,11 +54,11 @@ module.exports.schedulePrayers = (client) => {
         })
     });
 
-    console.log(`Job ${job.name} scheduled at ${job.nextInvocation()}`);
+    console.log(`Job Schedule Prayers ${job.name} scheduled at ${job.nextInvocation()}`);
 }
 
 const getPrayerTimes = async (city, country) => {
-    const API_ENDPOINT = `http://api.aladhan.com/v1/timingsByAddress?address=${city},${country}&iso8601=1`
+    const API_ENDPOINT = `http://api.aladhan.com/v1/timingsByAddress?address=${city},${country}&iso8601=true`
     try{
         const response = await fetch(API_ENDPOINT)
         const data = await response.json()
