@@ -1,5 +1,6 @@
 const { Sequelize, DataTypes } = require('sequelize');
 require('dotenv').config();
+const logger = require('../utils/logger.js')
 
 const sequelizeInstance = () => {
     const DB_HOST = process.env.DB_HOST
@@ -12,7 +13,7 @@ const sequelizeInstance = () => {
         process.exit(1)
     }
 
-    console.log("Database Used :", DB_DATABASE)
+    logger.info("Database Used :", DB_DATABASE)
     
     const connectionStr = `mariadb://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}/${DB_DATABASE}`
     return new Sequelize(connectionStr, {
@@ -28,7 +29,7 @@ const sequelize = sequelizeInstance()
 module.exports.init = async () => {
     try {
         await sequelize.authenticate();
-        console.log('Connection has been established successfully.');
+        logger.info('Connection has been established successfully.');
       } catch (error) {
         console.error('Unable to connect to the database:', error);
         throw error

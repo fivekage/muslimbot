@@ -1,23 +1,23 @@
 const { EmbedBuilder } = require('discord.js')
+const logger  = require('./logger.js')
 
 module.exports.handleNewGuild = async (client) => {
     client.on('guildCreate', async guild => {
+        logger.info(`Joined a new guild: ${guild.name} (${guild.id}). This guild has ${guild.memberCount} members!`);
+        guild.channels.cache.forEach(element => {
+            if(element.type == 0)
+                console.log(element)
+        });
+
+        const channel = guild.channels.cache.find(channel => channel.type ==0)
         const replyEmbed = new EmbedBuilder()
             .setTitle('Assalamu alaykum 🙏')
             .setDescription('Type `/help` to get started with MuslimBot 🤖');
 
-            let channelId;
-            if(guild.publicUpdatesChannelId) 
-                channelId = guild.publicUpdatesChannelId
-            else if(guild.systemChannelId)
-                channelId = guild.systemChannelId
-            else {
-                console.warn("No channel to send the welcome message")
+            if(!channel) {
+                logger.warn("No channel to send the welcome message")
                 return;
-            
             }
-        
-            const sendChannel = await guild.channels.cache.get(channelId)
-            await sendChannel.send({ embeds: [replyEmbed] })
-    })
+            channel.send({ embeds: [replyEmbed] })
+        })
 }

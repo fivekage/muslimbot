@@ -1,5 +1,6 @@
 const { ButtonBuilder, ButtonStyle, EmbedBuilder, ActionRowBuilder } = require('discord.js');
 const { Users, Subscriptions } = require('../../data/models.js');
+const logger  = require('../../utils/logger.js')
 
 module.exports.help = {
     name : 'subscribe',
@@ -68,7 +69,7 @@ module.exports.run = async (interaction) => {
 
             let subscription = await Subscriptions().findOne({ where: { UserId: user.id, city: city, country: country } })
             if(subscription) {
-                console.log("Notification for prayer in", city, "already activated for", interaction.user.username)
+                logger.info("Notification for prayer in", city, "already activated for", interaction.user.username)
                 await confirmation.update({ content: `You already receive notifications for prayers in ${city}, ${country}`, components: [] })
                 return
             }
@@ -76,7 +77,7 @@ module.exports.run = async (interaction) => {
             // Create subscription
             subscription = Subscriptions().build({ subscriptionEnabled: true,city: city, country: country, UserId: user.id })
             await subscription.save()
-            console.log("Notification for prayer in", city, "activated for", interaction.user.username)
+            logger.info("Notification for prayer in", city, "activated for", interaction.user.username)
 
             // Confirmation message
             await confirmation.update({ content: `You will receive notifications for prayers in ${city}`, components: [] })
@@ -88,7 +89,7 @@ module.exports.run = async (interaction) => {
             await confirmation.update({ content: 'Action cancelled', components: [] });
         }
     } catch (e) {
-        console.log(e);
+        logger.error(e);
         await interaction.editReply({ content: 'Confirmation not received within 1 minute, cancelling', components: [] });
     }
 }
