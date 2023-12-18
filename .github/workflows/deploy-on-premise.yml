@@ -77,7 +77,7 @@ jobs:
               --name muslimbot \
               --env-file .env \
               --restart=always \
-              --mount type=bind,source=/var/log/muslimbot,target=/usr/app/logs \
+              --mount type=bind,source=/var/log/muslimbot,target=/usr/src/bot/logs \
               samy266/muslimbot:${{ steps.vars.outputs.sha_short }}
 
               echo "Docker Container Started Successfully"
