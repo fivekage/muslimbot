@@ -77,9 +77,9 @@ jobs:
               --name muslimbot \
               --env-file .env \
               --restart=always \
-              --mount type=bind,source="$(pwd)"/logs,target=/var/log/muslimbot \
+              --mount type=bind,source=/var/log/muslimbot,target=/usr/app/logs \
               samy266/muslimbot:${{ steps.vars.outputs.sha_short }}
-              
+
               echo "Docker Container Started Successfully"
               echo "Remove .env file..."
               rm .env
