@@ -1,5 +1,6 @@
 const { EmbedBuilder } = require('discord.js')
 const vars = require("../_general/vars.js")
+const logger = require('../../utils/logger.js')
 
 module.exports.help = {
     name : 'prayer',
@@ -30,8 +31,7 @@ module.exports.run =  (message) => {
     if(!city || !country) return message.reply("You must specify a city and a country")
     
     const API_ENDPOINT = `http://api.aladhan.com/v1/timingsByAddress?address=${city},${country}`
-    try{
-        // Not tested, might not work
+    try {
         fetch(API_ENDPOINT)
             .then(response => {
                 if (!response.ok) {
@@ -59,7 +59,7 @@ module.exports.run =  (message) => {
                     .setTimestamp()
                 return message.reply({ embeds: [embed] })
             })
-            .catch(error => console.log(error));
+            .catch(error => logger.error(error));
     }catch(error){
         console.warn("Error during retrieve prayers",error)
         return message.reply("City not found")

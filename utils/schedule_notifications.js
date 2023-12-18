@@ -3,6 +3,7 @@ const rule = new schedule.RecurrenceRule();
 const { Users, Subscriptions, Notifications } = require('../data/models.js');
 const { EmbedBuilder} = require('discord.js')
 const vars = require('../commands/_general/vars.js')
+const logger = require('./logger.js')
 
 const schedulePrayerNotifications = (client, subscription, prayer, prayerDateTime) => {
     const userid = subscription.User.userId
@@ -31,7 +32,7 @@ const schedulePrayerNotifications = (client, subscription, prayer, prayerDateTim
         })
     }.bind(null,prayer));
 
-    console.log(`Job ${prayer} scheduled at ${prayerDateTime.toLocaleString()} for user ${userid}`);
+    logger.info(`Job ${prayer} scheduled at ${prayerDateTime.toLocaleString()} for user ${userid}`);
 }
 
 module.exports.schedulePrayers = (client) => {
@@ -54,7 +55,7 @@ module.exports.schedulePrayers = (client) => {
         })
     });
 
-    console.log(`Job Schedule Prayers ${job.name} scheduled at ${job.nextInvocation()}`);
+    logger.info(`Job Schedule Prayers ${job.name} scheduled at ${job.nextInvocation()}`);
 }
 
 const getPrayerTimes = async (city, country) => {
