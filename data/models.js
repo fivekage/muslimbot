@@ -83,9 +83,9 @@ module.exports.init = async () => {
         await sequelize.sync({ benchmark: true, force: true, match: /.*_dev$/})
     }
     
-    await Users.sync({ alter: true, benchmark: true})
-    await Subscriptions.sync({ alter: true, benchmark: true})
-    await Notifications.sync({ alter: true, benchmark: true})
+    await Users.sync({ benchmark: true})
+    await Subscriptions.sync({ benchmark: true})
+    await Notifications.sync({ benchmark: true})
 
 }
 
