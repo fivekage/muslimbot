@@ -14,7 +14,7 @@ const sequelizeInstance = () => {
     }
 
     logger.info("Database Used :", DB_DATABASE)
-    
+
     const connectionStr = `mariadb://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}/${DB_DATABASE}`
     return new Sequelize(connectionStr, {
         host: DB_HOST,
@@ -30,7 +30,7 @@ module.exports.init = async () => {
     try {
         await sequelize.authenticate();
         logger.info('Connection has been established successfully.');
-      } catch (error) {
+    } catch (error) {
         console.error('Unable to connect to the database:', error);
         throw error
     }
@@ -79,13 +79,13 @@ module.exports.init = async () => {
     Subscriptions.hasMany(Notifications);
     Notifications.belongsTo(Subscriptions)
 
-    if(process.env.NODE_ENV != "production") {
-        await sequelize.sync({ benchmark: true, force: true, match: /.*_dev$/})
+    if (process.env.NODE_ENV != "production") {
+        await sequelize.sync({ benchmark: true, match: /.*_dev$/ })
     }
-    
-    await Users.sync({ benchmark: true})
-    await Subscriptions.sync({ benchmark: true})
-    await Notifications.sync({ benchmark: true})
+
+    await Users.sync({ benchmark: true })
+    await Subscriptions.sync({ benchmark: true })
+    await Notifications.sync({ benchmark: true })
 
 }
 

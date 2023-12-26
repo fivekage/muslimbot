@@ -1,26 +1,37 @@
 const { EmbedBuilder } = require('discord.js');
 const { Users, Subscriptions } = require('../../data/models.js');
+const vars = require('../_general/vars.js');
 
 module.exports.help = {
-    name : 'unsubscribe',
-    description : "Unsubscribe to get notifications for each prayer of the day according to the desired city",
+    name: 'unsubscribe',
+    description: "Unsubscribe to get notifications for prayers",
 }
 
-module.exports.run = async (interaction) => {
-    
+module.exports.run = async (_client, interaction) => {
+
     let user = await Users().findOne({ where: { userId: interaction.user.id } })
-    if(!user) {
+    if (!user) {
         const replyEmbed = new EmbedBuilder()
             .setTitle('You are not present in our subscriptions')
             .setDescription('You have to subscribe first with the command `/subscribe`')
             .setColor(vars.primaryColor);
         await interaction.reply({ embeds: [replyEmbed], ephemeral: true })
+        return
     }
-    
-    let subscription = await Subscriptions().findOne({ where: { UserId: user.id} })
-    subscription.subscriptionEnabled = false
-    await subscription.save()
-    
+
+    let subscription = await Subscriptions().findAll({ where: { UserId: user.id } })
+    if (!subscription) {
+        const replyEmbed = new EmbedBuilder()
+            .setTitle('You are not present in our subscriptions')
+            .setDescription('You have to subscribe first with the command `/subscribe`')
+            .setColor(vars.primaryColor);
+        await interaction.reply({ embeds: [replyEmbed], ephemeral: true })
+        return
+    }
+    for (const sub of subscription) {
+        sub.subscriptionEnabled = false
+        await sub.save()
+    }
     const replyEmbed = new EmbedBuilder()
         .setTitle('Subscription removed')
         .setDescription('You will no longer receive notifications for prayers')

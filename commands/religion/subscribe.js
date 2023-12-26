@@ -1,10 +1,10 @@
 const { ButtonBuilder, ButtonStyle, EmbedBuilder, ActionRowBuilder } = require('discord.js');
 const { Users, Subscriptions } = require('../../data/models.js');
-const logger  = require('../../utils/logger.js')
+const logger = require('../../utils/logger.js')
 
 module.exports.help = {
-    name : 'subscribe',
-    description : "Subscription to get notifications for each prayer of the day according to the desired city",
+    name: 'subscribe',
+    description: "Subscription to get notifications for each prayer of the day according to the desired city",
     options: [
         {
             name: 'city',
@@ -21,14 +21,14 @@ module.exports.help = {
     ],
 }
 
-module.exports.run = async (interaction) => {
+module.exports.run = async (_client, interaction) => {
 
     const queryCountry = interaction.options.getString('country')
     const queryCity = interaction.options.getString('city')
     const city = queryCity.charAt(0).toUpperCase() + queryCity.slice(1).toLowerCase()
     const country = queryCountry.charAt(0).toUpperCase() + queryCountry.slice(1).toLowerCase()
 
-    if(!city || !country) return interaction.reply("You must specify a city and a country")
+    if (!city || !country) return interaction.reply("You must specify a city and a country")
 
     const confirm = new ButtonBuilder()
         .setCustomId('confirm')
@@ -58,24 +58,24 @@ module.exports.run = async (interaction) => {
 
     try {
         const confirmation = await response.awaitMessageComponent({ filter: collectorFilter, time: 60000 });
-        
+
         if (confirmation.customId === 'confirm') {
-            
+
             let user = await Users().findOne({ where: { userId: interaction.user.id } })
-            if(!user) {
+            if (!user) {
                 user = Users().build({ userId: interaction.user.id, guildId: interaction.guildId })
                 await user.save()
             }
 
             let subscription = await Subscriptions().findOne({ where: { UserId: user.id, city: city, country: country } })
-            if(subscription) {
+            if (subscription) {
                 logger.info("Notification for prayer in", city, "already activated for", interaction.user.username)
                 await confirmation.update({ content: `You already receive notifications for prayers in ${city}, ${country}`, components: [] })
                 return
             }
 
             // Create subscription
-            subscription = Subscriptions().build({ subscriptionEnabled: true,city: city, country: country, UserId: user.id })
+            subscription = Subscriptions().build({ subscriptionEnabled: true, city: city, country: country, UserId: user.id })
             await subscription.save()
             logger.info("Notification for prayer in", city, "activated for", interaction.user.username)
 
