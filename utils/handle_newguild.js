@@ -4,10 +4,6 @@ const logger  = require('./logger.js')
 module.exports.handleNewGuild = async (client) => {
     client.on('guildCreate', async guild => {
         logger.info(`Joined a new guild: ${guild.name} (${guild.id}). This guild has ${guild.memberCount} members!`);
-        guild.channels.cache.forEach(element => {
-            if(element.type == 0)
-                console.log(element)
-        });
 
         const channel = guild.channels.cache.find(channel => channel.type ==0)
         const replyEmbed = new EmbedBuilder()

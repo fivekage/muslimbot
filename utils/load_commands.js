@@ -11,7 +11,13 @@ module.exports = {
                 for (const file of commandsFileName){
                     const getFileName = require(`../${directory}/${dir}/${file}`)
                      const name = getFileName.help.name
-                    commands.push({ name: name, description: getFileName.help.description, options: getFileName.help.options, file: getFileName})
+                    commands.push({ 
+                        name: name, 
+                        description: getFileName.help.description, 
+                        options: getFileName.help.options, 
+                        choices: getFileName.help.choices,
+                        file: getFileName
+                    })
                 }
             }
         }
