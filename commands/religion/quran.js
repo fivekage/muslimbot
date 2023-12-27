@@ -3,7 +3,7 @@ const { EmbedBuilder } = require('discord.js')
 const { connectToChannel } = require('../../utils/play_quran.js')
 
 module.exports.help = {
-    name: 'quranu',
+    name: 'quran',
     description: "Play a random verse from the Quran",
 }
 
