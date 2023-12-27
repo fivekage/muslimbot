@@ -1,16 +1,13 @@
-const { EmbedBuilder } = require('discord.js')
 const vars = require("../_general/vars.js")
-const { QueryType, useMainPlayer } = require('discord-player');
-
-const { retrieveQuranVerses } = require('../../utils/retrieve_quran_verses.js')
-const quranVerses = retrieveQuranVerses();
+const { EmbedBuilder } = require('discord.js')
+const { connectToChannel } = require('../../utils/play_quran.js')
 
 module.exports.help = {
-    name: 'quran',
+    name: 'quranu',
     description: "Play a random verse from the Quran",
 }
 
-module.exports.run = async (_client, interaction) => {
+module.exports.run = async (client, interaction) => {
 
     const channel = interaction.member.voice.channel;
     if (!interaction.inGuild())
@@ -22,32 +19,19 @@ module.exports.run = async (_client, interaction) => {
     }
 
 
-    const player = useMainPlayer();
-    await player.extractors.loadDefault(e => e === "AttachmentExtractor");
+    const connection = await connectToChannel(channel);
+    connection.subscribe(client.player);
 
-    const randomVerse = quranVerses[Math.floor(Math.random() * quranVerses.length)]
-    const fullPathFile = `./quran/${randomVerse}`
-
-    try {
-        const { track } = await player.play(channel, fullPathFile, {
-            searchEngine: QueryType.FILE,
-            nodeOptions: {
-                // nodeOptions are the options for guild node (aka your queue in simple word)
-                metadata: interaction // we can access this metadata object using queue.metadata later on
-            }
-        });
-
-        const playEmbed = new EmbedBuilder()
-            .setColor(vars.primaryColor)
-            .setDescription(`Playing: ${track.title}`)
-            .setAuthor({ name: track.author, iconURL: track.thumbnail })
-            .setTimestamp()
-            .setFooter({ text: `Requested by ${interaction.user.username}` })
-
-        await interaction.reply({ embeds: [playEmbed] })
-
-    } catch (e) {
-        // let's return error if something failed
-        return interaction.followUp(`Something went wrong: ${e}`);
-    }
+    const playEmbed = new EmbedBuilder()
+        .setColor(vars.primaryColor)
+        .setTitle(`Quran Radio 🎙️`)
+        .setThumbnail("https://imgur.com/Frlrlte.png")
+        .addFields(
+            { name: ':musical_note: **Playing**', value: `**${client.player.currentResource.toUpperCase()}**` },
+        )
+        .setTimestamp()
+        .setFooter({ text: `Requested by ${interaction.user.username}` })
+    await interaction.reply({ embeds: [playEmbed] })
 }
+
+// Thanks to : https://github.com/discordjs/voice-examples/blob/main/radio-bot/src/bot.ts
