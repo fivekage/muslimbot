@@ -23,6 +23,9 @@ const player = createAudioPlayer({
 
 
 module.exports.playQuran = (client = null) => {
+    // DISABLED FOR NOW BC OF MEMORY ISSUES
+    return;
+
     const quranVerses = retrieveQuranVerses();
     const randomVerse = quranVerses[Math.floor(Math.random() * quranVerses.length)]
     const fullPathFile = `./quran/${randomVerse}`

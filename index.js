@@ -10,6 +10,8 @@ require('dotenv').config();
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds, 'GuildVoiceStates'] });
 
+module.exports.client = client
+
 const DISCORD_TOKEN = process.env.DISCORD_TOKEN
 const CLIENT_ID = process.env.CLIENT_ID
 if (!DISCORD_TOKEN || !CLIENT_ID) {
@@ -22,7 +24,7 @@ const commands = loadAllCommands();
 // Initialize database
 (async () => {
     await models.init()
-    schedulePrayers(client)
+    schedulePrayers()
 })()
 
 

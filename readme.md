@@ -29,7 +29,7 @@ To add the Muslim Bot Discord Bot to your server, simply click [here](https://to
 - **Unsubscribe from prayer notifications:**
 `/unsubscribe`
 
-- **Listen to the Quran Live Radio:**
+- **Listen to the Quran Live Radio:** (NOTE : Disabled for now)
 `/quran`
 
 
