@@ -60,6 +60,13 @@ module.exports.init = async () => {
         city: DataTypes.STRING,
         country: DataTypes.STRING,
         subscriptionEnabled: DataTypes.BOOLEAN,
+    }, {
+        hooks: {
+            afterCreate: async (subscription, options) => {
+                const { schedulePrayerNewSubscription } = require('../utils/schedule_notifications.js')
+                schedulePrayerNewSubscription(subscription)
+            },
+        }
     });
 
     const Notifications = sequelize.define('Notifications', {
