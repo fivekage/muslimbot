@@ -9,7 +9,7 @@ const sequelizeInstance = () => {
     const DB_PASSWORD = process.env.DB_PASSWORD
 
     if (!DB_HOST || !DB_USERNAME || !DB_PASSWORD) {
-        console.error("Please provide a valid db host, username and password")
+        logger.error("Please provide a valid db host, username and password")
         process.exit(1)
     }
 
@@ -21,17 +21,19 @@ const sequelizeInstance = () => {
         database: DB_DATABASE,
         username: DB_USERNAME,
         password: DB_PASSWORD,
-        dialect: 'mariadb'
+        dialect: 'mariadb',
+        benchmark: true,  // <-- this one enables tracking execution time
+        logging: (sql, timingMs) => logger.debug(`${sql} - [Execution time: ${timingMs}ms]`)
     });
 };
 
 const sequelize = sequelizeInstance()
-module.exports.init = async () => {
+module.exports.init = async (client) => {
     try {
         await sequelize.authenticate();
         logger.info('Connection has been established successfully.');
     } catch (error) {
-        console.error('Unable to connect to the database:', error);
+        logger.error('Unable to connect to the database:', error);
         throw error
     }
 
@@ -64,7 +66,7 @@ module.exports.init = async () => {
         hooks: {
             afterCreate: async (subscription, options) => {
                 const { schedulePrayerNewSubscription } = require('../utils/schedule_notifications.js')
-                schedulePrayerNewSubscription(subscription)
+                schedulePrayerNewSubscription(client, subscription)
             },
         }
     });
@@ -76,6 +78,7 @@ module.exports.init = async () => {
             primaryKey: true
         },
         prayer: DataTypes.STRING,
+        sent: DataTypes.BOOLEAN,
     });
 
     Users.hasOne(Subscriptions);
@@ -87,12 +90,12 @@ module.exports.init = async () => {
     Notifications.belongsTo(Subscriptions)
 
     if (process.env.NODE_ENV != "production") {
-        await sequelize.sync({ benchmark: true, match: /.*_dev$/ })
+        await sequelize.sync({ match: /.*_dev$/ })
     }
 
-    await Users.sync({ benchmark: true })
-    await Subscriptions.sync({ benchmark: true })
-    await Notifications.sync({ benchmark: true })
+    await Users.sync()
+    await Subscriptions.sync()
+    await Notifications.sync()
 
 }
 

@@ -1,17 +1,19 @@
-FROM node:latest
+FROM node:slim as builder
 
-# Create the directory
-RUN mkdir -p /usr/src/bot
+
 WORKDIR /usr/src/bot
+COPY package.json .
+RUN npm install --production
+RUN npm install -g @vercel/ncc
+COPY . .
 
-# Copy and Install our bot
-COPY package.json /usr/src/bot
-RUN npm install
+RUN ncc build index.js -o dist
 
-# Our precious bot
-COPY . /usr/src/bot
 
-# Start me!
-CMD ["node", "index.js"]
+FROM node:alpine
+WORKDIR /usr/src/bot
+COPY --from=builder /usr/src/bot/dist/index.js .
+CMD ["index.js"]
 
-# reference: https://github.com/nomsi/docker-discordjs-tutorial/blob/master/3.%20Creating%20the%20Dockerfile%20and%20Running!.md
+
+# reference: https://webbylab.com/blog/minimal_size_docker_image_for_your_nodejs_app/
