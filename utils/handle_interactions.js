@@ -9,7 +9,7 @@ module.exports.handleInteraction = async (client, commands) => {
 
                 commands.find((command) => command.name == interaction.commandName).file.run(client, interaction);
             } catch (error) {
-                console.error(error);
+                logger.error(error);
                 await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
             }
         }

@@ -61,7 +61,7 @@ module.exports.run = (_client, interaction) => {
             })
             .catch(error => logger.error(error));
     } catch (error) {
-        console.warn("Error during retrieve prayers", error)
+        logger.warn("Error during retrieve prayers", error)
         return interaction.reply("City not found")
     }
 }

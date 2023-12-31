@@ -16,7 +16,7 @@ module.exports.initializationClient = async (client, rest, discordToken, clientI
         await rest.put(Routes.applicationCommands(clientId), { body: commands });
         logger.info('Successfully reloaded application (/) commands.');
     } catch (error) {
-        console.error(error);
+        logger.error(error);
     }
     client.on('ready', () => {
         logger.info(`Logged in as ${client.user.tag}!`);
