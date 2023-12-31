@@ -22,6 +22,7 @@ const sequelizeInstance = () => {
         username: DB_USERNAME,
         password: DB_PASSWORD,
         dialect: 'mariadb',
+        dialectModule: require('mariadb'),
         benchmark: true,  // <-- this one enables tracking execution time
         logging: (sql, timingMs) => logger.debug(`${sql} - [Execution time: ${timingMs}ms]`)
     });
