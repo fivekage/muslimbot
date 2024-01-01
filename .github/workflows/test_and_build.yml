@@ -1,0 +1,20 @@
+name: Continuous Integration
+
+on:
+  pull_request:
+    branches:
+      - main
+
+env:
+  WORKDIR: /home/${{ secrets.SSH_USERNAME }}/muslimbot
+  env: production
+
+jobs:
+  build_docker_image:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Build Docker image
+        run: |
+          docker build -t muslimbot .
