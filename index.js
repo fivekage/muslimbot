@@ -6,6 +6,7 @@ const { handleNewGuild } = require('./utils/handle_newguild.js')
 const logger = require('./utils/logger.js')
 const models = require('./data/models.js')
 const { dailyCallSchedulePrayers, schedulePrayersForTheDay } = require('./utils/schedule_notifications.js')
+const { dailyCallScheduleHadiths } = require('./utils/schedule_hadiths.js')
 const { playQuran } = require('./utils/play_quran.js')
 require('dotenv').config();
 
@@ -25,6 +26,7 @@ const commands = loadAllCommands();
     await models.init(client)
     dailyCallSchedulePrayers(client)
     schedulePrayersForTheDay(client)
+    dailyCallScheduleHadiths(client)
 })(client)
 
 
