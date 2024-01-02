@@ -8,34 +8,38 @@ const rule = new schedule.RecurrenceRule();
 
 const hadithAPIUrl = "https://random-hadith-generator.vercel.app/"
 
-module.exports.dailyCallScheduleHadiths = (client) => {
-    rule.hour = 12;
-    rule.minute = 0;
-    //rule.minute = new schedule.Range(0, 59); // Todo: change to 0
+module.exports.dailyCallScheduleHadiths = async (client) => {
+    rule.hour = 12
+    //rule.minute = 0;
+    rule.hour = new schedule.Range(0, 59); // Todo: change to 0
+    rule.minute = new schedule.Range(0, 59); // Todo: change to 0
 
     rule.tz = 'Etc/UTC';
 
+    let hadithOk = false
+    let hadith = null
+    while (!hadithOk) {
+        hadith = await getRandomHadith()
+        if (hadith['hadith_english'] && hadith['hadith_english'].length < 1024) { // Discord embed limit
+            hadithOk = true
+        }
+    }
+
     const job = schedule.scheduleJob(rule, function () {
         const guilds = Guilds()
-        guilds.findAll().then(guilds => {
-            guilds.forEach(async guild => {
+        guilds.findAll({ where: { dailyHadithEnabled: true } }).then(guilds => {
+            guilds.forEach(guild => {
                 const channel = client.guilds.cache.get(guild.guildId).channels.cache.find(channel => channel.type == 0)
                 if (!channel) {
                     logger.warn("No channel to send the hadith")
                     return;
                 }
 
-                const hadith = await getRandomHadith()
-
-                if (!hadith) {
-                    logger.warn("No hadith found")
-                    return;
-                }
-                const hadithBook = hadith['book']
-                const hadithChapterName = hadith['chapterName']
+                const hadithBook = hadith['book'].replace('`', '')
+                const hadithChapterName = hadith['chapterName'].replace('`', '')
                 const hadithBookName = hadith['bookName'].replace(/[\t\n]/g, '');
                 const hadithText = hadith['hadith_english'].replace('`', '')
-                const hadithHeader = hadith['header'] ?? '\u200B'
+                const hadithHeader = hadith['header']?.replace('`', '') ?? '\u200B'
 
                 try {
                     const replyEmbed = new EmbedBuilder()

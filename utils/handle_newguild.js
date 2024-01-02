@@ -13,6 +13,7 @@ module.exports.handleNewGuild = async (client) => {
             where: { guildId: guild.id },
             defaults: {
                 guildName: guild.name,
+                dailyHadithEnabled: true,
             }
         })
 
