@@ -82,6 +82,16 @@ module.exports.init = async (client) => {
         sent: DataTypes.BOOLEAN,
     });
 
+    const Guilds = sequelize.define('Guilds', {
+        id: {
+            type: DataTypes.INTEGER,
+            autoIncrement: true,
+            primaryKey: true
+        },
+        guildId: DataTypes.STRING,
+        guildName: DataTypes.STRING,
+    });
+
     Users.hasOne(Subscriptions);
     Subscriptions.belongsTo(Users)
 
@@ -97,6 +107,7 @@ module.exports.init = async (client) => {
     await Users.sync()
     await Subscriptions.sync()
     await Notifications.sync()
+    await Guilds.sync()
 
 }
 
@@ -110,4 +121,8 @@ module.exports.Subscriptions = () => {
 
 module.exports.Notifications = () => {
     return sequelize.models["Notifications"]
+}
+
+module.exports.Guilds = () => {
+    return sequelize.models["Guilds"]
 }
