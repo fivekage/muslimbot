@@ -10,9 +10,7 @@ const hadithAPIUrl = "https://random-hadith-generator.vercel.app/"
 
 module.exports.dailyCallScheduleHadiths = async (client) => {
     rule.hour = 12
-    //rule.minute = 0;
-    rule.hour = new schedule.Range(0, 59); // Todo: change to 0
-    rule.minute = new schedule.Range(0, 59); // Todo: change to 0
+    rule.minute = 0;
 
     rule.tz = 'Etc/UTC';
 
