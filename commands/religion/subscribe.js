@@ -30,6 +30,8 @@ module.exports.run = async (_client, interaction) => {
 
     if (!city || !country) return interaction.reply("You must specify a city and a country")
 
+    if (interaction.user.bot) return interaction.reply("You can't subscribe to notifications with a bot account")
+
     const confirm = new ButtonBuilder()
         .setCustomId('confirm')
         .setLabel('Confirm')

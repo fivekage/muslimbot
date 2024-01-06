@@ -6,12 +6,17 @@ const { EmbedBuilder } = require('discord.js')
 const vars = require('../commands/_general/vars.js')
 const rule = new schedule.RecurrenceRule();
 
-const hadithAPIUrl = "https://random-hadith-generator.vercel.app/"
+const hadithAPIUrl = process.env.HADITH_API_URL
 
 module.exports.dailyCallScheduleHadiths = async (client) => {
-    rule.hour = 12
-    rule.minute = 0;
-
+    if (process.env.NODE_ENV !== 'production' && process.env.NODE_ENV === 'development') {
+        rule.hour = new schedule.Range(0, 59); // Todo: change to 0
+        rule.minute = new schedule.Range(0, 59); // Todo: change to 0
+    }
+    else {
+        rule.hour = process.env.HADITH_SCHEDULE_HOUR ?? 10
+        rule.minute = process.env.HADITH_SCHEDULE_MINUTE ?? 0;
+    }
     rule.tz = 'Etc/UTC';
 
     let hadithOk = false
@@ -27,16 +32,16 @@ module.exports.dailyCallScheduleHadiths = async (client) => {
         const guilds = Guilds()
         guilds.findAll({ where: { dailyHadithEnabled: true } }).then(guilds => {
             guilds.forEach(guild => {
-                const channel = client.guilds.cache.get(guild.guildId).channels.cache.find(channel => channel.type == 0)
+                const channel = client.guilds?.cache?.get(guild.guildId)?.channels.cache.find(channel => channel.type == 0)
                 if (!channel) {
-                    logger.warn("No channel to send the hadith")
+                    logger.warn("No channel to send the hadith in guild", guild.guildId)
                     return;
                 }
 
                 const hadithBook = hadith['book'].replace('`', '')
                 const hadithChapterName = hadith['chapterName'].replace('`', '')
                 const hadithBookName = hadith['bookName'].replace(/[\t\n]/g, '');
-                const hadithText = hadith['hadith_english'].replace('`', '')
+                const hadithText = hadith['hadith_english'].replace('`', '').trim().replace(/[\t\n]/g, '').replace('"', '')
                 const hadithHeader = hadith['header']?.replace('`', '') ?? '\u200B'
 
                 try {

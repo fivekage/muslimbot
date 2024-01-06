@@ -22,20 +22,29 @@ if (!DISCORD_TOKEN || !CLIENT_ID) {
 // Load all commands
 const commands = loadAllCommands();
 // Initialize database
-(async (client) => {
-    await models.init(client)
-    dailyCallSchedulePrayers(client)
-    schedulePrayersForTheDay(client)
-    dailyCallScheduleHadiths(client)
-})(client)
+
 
 
 // Initialize client
 const rest = new REST({ version: '10' }).setToken(DISCORD_TOKEN);
-initializationClient(client, rest, DISCORD_TOKEN, CLIENT_ID, commands).catch(console.error);
-playQuran(client)
+initializationClient(client, rest, DISCORD_TOKEN, CLIENT_ID, commands).catch(console.error).then(() => {
 
-// Handle interactions
-handleInteraction(client, commands).catch(console.error);
-handleNewGuild(client).catch(console.error);
+    // Initialize database and schedule jobs
+    (async (client) => {
+        await models.init(client)
+        dailyCallSchedulePrayers(client)
+        schedulePrayersForTheDay(client)
+        dailyCallScheduleHadiths(client)
+    })(client)
+
+    // Play Quran Radio
+    playQuran(client)
+
+    // Handle interactions
+    handleInteraction(client, commands).catch(console.error);
+    handleNewGuild(client).catch(console.error);
+});
+
+
+
 

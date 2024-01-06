@@ -60,11 +60,8 @@ const schedulePrayerNotifications = async (client, subscription, prayer, prayerD
 }
 
 module.exports.dailyCallSchedulePrayers = (client) => {
-    rule.hour = 2;
-    rule.minute = 0;
-    rule.tz = 'Etc/UTC';
-    //rule.minute = new schedule.Range(0, 59); // Todo: change to 0
-    const job = schedule.scheduleJob(rule, function () {
+    const ruleCron = process.env.PRAYER_SCHEDULE_CRON ?? '0 */2 * * *' // Every 2 hours;
+    const job = schedule.scheduleJob(ruleCron, function () {
         schedulePrayersForTheDay(client)
     });
 
