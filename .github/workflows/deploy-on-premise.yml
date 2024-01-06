@@ -41,6 +41,10 @@ jobs:
               echo "DB_HOST=${{ secrets.DB_HOST }}" >> .env
               echo "DB_USERNAME=${{ secrets.DB_USERNAME }}" >> .env
               echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
+              echo "HADITH_API_URL=${{ vars.HADITH_API_URL }}" >> .env
+              echo "HADITH_SCHEDULE_HOUR=${{ vars.HADITH_SCHEDULE_HOUR }}" >> .env
+              echo "HADITH_SCHEDULE_MINUTE=${{ vars.HADITH_SCHEDULE_MINUTE }}" >> .env
+              echo "PRAYER_SCHEDULE_RULE=${{ vars.PRAYER_SCHEDULE_RULE }}" >> .env
           
         - name: Login to Docker Hub
           uses: docker/login-action@v3
