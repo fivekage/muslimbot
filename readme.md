@@ -7,10 +7,12 @@ Also, users can listen to the Quran *(Mishary Rashid Alafasy)* live from the bot
 
 ## Features
 
-- **Accurate Prayer Times:** Get precise prayer times based on geographical location.
-- **Location-Based Subscriptions:** Users can subscribe to receive automated prayer time notifications for their specific location.
-- **Listen to the Quran Live:** Users can listen to the Quran live from the bot.
-- **User-Friendly Commands:** Simple and intuitive commands for ease of use.
+- ⏰ **Accurate Prayer Times:** Get precise prayer times based on geographical location.
+- 🔔 **Location-Based Subscriptions:** Users can subscribe to receive automated prayer time notifications for their specific location.
+- 📻 **Listen to the Quran Live:** Users can listen to the Quran live from the bot.
+- 🙏 **User-Friendly Commands:** Simple and intuitive commands for ease of use.
+- ⌛ **Hadith of the Day:** Users can enable daily hadiths for their server, it will send a random hadith in your server every day.
+- ❓ **Quizz:** Users can play a quizz with the bot, it will ask you a question and you have to answer it, you can play with your friends and see who has the best score.
 
 ## Getting Started
 
@@ -20,18 +22,23 @@ To add the Muslim Bot Discord Bot to your server, simply click [here](https://to
 
 ## Commands
 
-- **Get Prayer Times for the current day for your city:**
+- ⏰ **Get Prayer Times for the current day for your city:**
 `/prayer <city> <country>`
 
-- **Subscribe for prayers for your city:**
+- 🔔 **Subscribe for prayers for your city:**
 `/subscribe <city> <country>`
 
-- **Unsubscribe from prayer notifications:**
+- 🔕**Unsubscribe from prayer notifications:**
 `/unsubscribe`
 
-- **Listen to the Quran Live Radio:** (NOTE : Disabled for now)
+- 📻 **Listen to the Quran Live Radio:** (NOTE : Disabled for now)
 `/quran`
 
+- ⌛ **Enable daily hadiths for your server**
+`/hadith`
+
+- ❓ **Play a quizz**
+`/quizz`
 
 ### Note
 

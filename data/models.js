@@ -96,13 +96,42 @@ module.exports.init = async (client) => {
         }
     });
 
+    const QuizzQuestions = sequelize.define('QuizzQuestions', {
+        id: {
+            type: DataTypes.INTEGER,
+            autoIncrement: true,
+            primaryKey: true
+        },
+        question: DataTypes.STRING,
+        enabled: {
+            type: DataTypes.BOOLEAN,
+            defaultValue: true,
+        }
+    });
+
+    const QuizzAnswers = sequelize.define('QuizzAnswers', {
+        id: {
+            type: DataTypes.INTEGER,
+            autoIncrement: true,
+            primaryKey: true
+        },
+        valid: DataTypes.BOOLEAN,
+        answer: DataTypes.STRING,
+        enabled: {
+            type: DataTypes.BOOLEAN,
+            defaultValue: true,
+        }
+    });
+
     Users.hasOne(Subscriptions);
     Subscriptions.belongsTo(Users)
 
     Users.hasMany(Notifications);
     Notifications.belongsTo(Users)
     Subscriptions.hasMany(Notifications);
-    Notifications.belongsTo(Subscriptions)
+    Notifications.belongsTo(Subscriptions);
+    QuizzQuestions.hasMany(QuizzAnswers);
+    QuizzAnswers.belongsTo(QuizzQuestions);
 
     if (process.env.NODE_ENV != "production") {
         await sequelize.sync({ match: /.*_dev$/ })
@@ -112,6 +141,8 @@ module.exports.init = async (client) => {
     await Subscriptions.sync()
     await Notifications.sync()
     await Guilds.sync()
+    await QuizzQuestions.sync()
+    await QuizzAnswers.sync()
 
 }
 
@@ -129,4 +160,12 @@ module.exports.Notifications = () => {
 
 module.exports.Guilds = () => {
     return sequelize.models["Guilds"]
+}
+
+module.exports.QuizzQuestions = () => {
+    return sequelize.models["QuizzQuestions"]
+}
+
+module.exports.QuizzAnswers = () => {
+    return sequelize.models["QuizzAnswers"]
 }

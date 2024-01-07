@@ -28,7 +28,7 @@ module.exports.help = {
 }
 
 module.exports.run = async (_client, interaction) => {
-    if (!interaction.guild) return interaction.reply("This command is only available in a server")
+    if (!interaction.inGuild()) return interaction.reply("This command is only available in a server")
 
     const hadithEnabled = interaction.options.getBoolean('enabled')
     if (hadithEnabled === null) return interaction.reply("You must specify if you want to enable or disable daily hadiths")

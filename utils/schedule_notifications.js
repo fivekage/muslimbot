@@ -1,7 +1,6 @@
 const schedule = require('node-schedule');
-const rule = new schedule.RecurrenceRule();
 const { Users, Subscriptions, Notifications } = require('../data/models.js');
-const { EmbedBuilder } = require('discord.js')
+const { EmbedBuilder, UserFlags } = require('discord.js')
 const vars = require('../commands/_general/vars.js')
 const logger = require('./logger.js')
 const { Op } = require('sequelize')
@@ -59,7 +58,7 @@ const schedulePrayerNotifications = async (client, subscription, prayer, prayerD
 
 }
 
-module.exports.dailyCallSchedulePrayers = (client) => {
+const dailyCallSchedulePrayers = (client) => {
     const ruleCron = process.env.PRAYER_SCHEDULE_CRON ?? '0 */2 * * *' // Every 2 hours;
     const job = schedule.scheduleJob(ruleCron, function () {
         schedulePrayersForTheDay(client)
@@ -81,7 +80,7 @@ const getPrayerTimes = async (city, country) => {
     }
 }
 
-module.exports.schedulePrayersForTheDay = (client) => {
+const schedulePrayersForTheDay = (client) => {
     Subscriptions().findAll({ where: { subscriptionEnabled: true }, include: Users() }).then(subscriptions => {
         subscriptions.forEach(subscription => {
             getPrayerTimes(subscription.city, subscription.country).then(prayers => {
@@ -97,7 +96,7 @@ module.exports.schedulePrayersForTheDay = (client) => {
 }
 
 // Handle new subscription
-module.exports.schedulePrayerNewSubscription = async (client, subscription) => {
+const schedulePrayerNewSubscription = async (client, subscription) => {
     const subscriptionWithUser = await Subscriptions().findOne({ where: { id: subscription.id }, include: Users() })
     logger.info(`New subscription for user ${subscriptionWithUser.User.userId}`)
     if (!subscriptionWithUser) throw new Error(`Subscription ${subscription.id} not found`)
@@ -151,5 +150,11 @@ const prayersMessages = {
 
 function getRandomInt(max) {
     return Math.floor(Math.random() * max);
+}
+
+module.exports = {
+    schedulePrayersForTheDay,
+    schedulePrayerNewSubscription,
+    dailyCallSchedulePrayers
 }
 
