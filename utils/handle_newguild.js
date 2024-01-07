@@ -1,4 +1,4 @@
-const { EmbedBuilder } = require('discord.js')
+const { EmbedBuilder, PermissionsBitField } = require('discord.js')
 const logger = require('./logger.js')
 const { Guilds } = require('../data/models.js')
 const vars = require('../commands/_general/vars.js')
@@ -6,6 +6,11 @@ const vars = require('../commands/_general/vars.js')
 module.exports.handleNewGuild = async (client) => {
     client.on('guildCreate', async guild => {
         logger.info(`Joined a new guild: ${guild.name} (${guild.id}). This guild has ${guild.memberCount} members!`);
+
+        if (!guild.available) {
+            logger.warn(`Guild ${guild.name} is not available`)
+            return;
+        }
 
         const guilds = Guilds()
 
@@ -18,6 +23,14 @@ module.exports.handleNewGuild = async (client) => {
         })
 
         const channel = guild.channels.cache.find(channel => channel.type == 0)
+        if (!channel) {
+            logger.warn("No channel to send the welcome message")
+            return;
+        }
+        if (!client.guilds.cache.get(guild.id).members.me.permissionsIn(channel.id).has(PermissionsBitField.Flags.SendMessages)) {
+            logger.warn(`Guild ${guild.name} doesn't have the permission to send messages in channel ${channel.name}`)
+            return;
+        }
         const replyEmbed = new EmbedBuilder()
             .setTitle('Assalamu alaykum 🙏')
             .setDescription('Get started with MuslimBot to receive prayer notifications and hadiths')
@@ -40,10 +53,6 @@ module.exports.handleNewGuild = async (client) => {
             ])
             .setFooter({ text: 'MuslimBot 🕋 - For any help type /help command' })
 
-        if (!channel) {
-            logger.warn("No channel to send the welcome message")
-            return;
-        }
         channel.send({ embeds: [replyEmbed] })
     })
 }

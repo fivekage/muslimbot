@@ -2,13 +2,13 @@
 const { Guilds } = require('../data/models.js')
 const logger = require('./logger.js')
 const schedule = require('node-schedule')
-const { EmbedBuilder } = require('discord.js')
+const { EmbedBuilder, PermissionsBitField } = require('discord.js')
 const vars = require('../commands/_general/vars.js')
 const rule = new schedule.RecurrenceRule();
 
 const hadithAPIUrl = process.env.HADITH_API_URL
 
-module.exports.dailyCallScheduleHadiths = async (client) => {
+const dailyCallScheduleHadiths = (client) => {
     if (process.env.NODE_ENV !== 'production' && process.env.NODE_ENV === 'development') {
         rule.hour = new schedule.Range(0, 59); // Todo: change to 0
         rule.minute = new schedule.Range(0, 59); // Todo: change to 0
@@ -19,24 +19,41 @@ module.exports.dailyCallScheduleHadiths = async (client) => {
     }
     rule.tz = 'Etc/UTC';
 
-    let hadithOk = false
-    let hadith = null
-    while (!hadithOk) {
-        hadith = await getRandomHadith()
-        if (hadith['hadith_english'] && hadith['hadith_english'].length < 1024) { // Discord embed limit
-            hadithOk = true
-        }
-    }
-
-    const job = schedule.scheduleJob(rule, function () {
+    const job = schedule.scheduleJob(rule, async function () {
         const guilds = Guilds()
+        // Fetch hadith
+        let hadithOk = false
+        let hadith = null
+        while (!hadithOk) {
+            try {
+                hadith = await getRandomHadith()
+                if (hadith['hadith_english'] && hadith['hadith_english'].length < 1024) { // Discord embed limit
+                    hadithOk = true
+                }
+            } catch (error) {
+                logger.error("Error during retrieve hadith", error)
+                return
+            }
+            logger.debug("Hadith length", hadith['hadith_english'].length)
+        }
+
+        // Send hadith to all guilds
         guilds.findAll({ where: { dailyHadithEnabled: true } }).then(guilds => {
             guilds.forEach(guild => {
-                const channel = client.guilds?.cache?.get(guild.guildId)?.channels.cache.find(channel => channel.type == 0)
+                const guildCache = client.guilds.cache.get(guild.guildId)
+                const channel = guildCache?.channels.cache.find(channel => channel.type == 0)
+
                 if (!channel) {
                     logger.warn("No channel to send the hadith in guild", guild.guildId)
                     return;
                 }
+
+                if (!client.guilds.cache.get(guild.id).members.me.permissionsIn(channel.id).has(PermissionsBitField.Flags.SendMessages)) {
+                    logger.warn(`Guild ${guild.name} doesn't have the permission to send messages in channel ${channel.name}`)
+                    return;
+                }
+
+                logger.info(`Sending hadith to guild ${guild.guildId}`)
 
                 const hadithBook = hadith['book'].replace('`', '')
                 const hadithChapterName = hadith['chapterName'].replace('`', '')
@@ -64,6 +81,7 @@ module.exports.dailyCallScheduleHadiths = async (client) => {
                         .setTimestamp();
 
                     channel.send({ embeds: [replyEmbed] })
+                    logger.info(`Hadith sent to guild ${guild.guildId}`)
                 } catch (error) {
                     logger.error("Error during create embed for hadith", error)
                     return
@@ -82,14 +100,19 @@ const getRandomHadith = async () => {
     try {
         const response = await fetch(API_ENDPOINT)
         const data = await response.json()
+        logger.info("Hadih retrieved successfully from API")
         return data['data']
     }
     catch (error) {
-        logger.warn("Error during retrieve prayers", error)
-        return null
+        logger.error("Error during retrieve hadith", error)
+        throw error
     }
 }
 
 const hadithsBooks = [
     "bukhari", "muslim", "abudawud", "ibnmajah", "tirmidhi"
 ]
+
+module.exports = {
+    dailyCallScheduleHadiths
+}

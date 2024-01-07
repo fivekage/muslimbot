@@ -10,7 +10,7 @@ const { dailyCallScheduleHadiths } = require('./utils/schedule_hadiths.js')
 const { playQuran } = require('./utils/play_quran.js')
 require('dotenv').config();
 
-const client = new Client({ intents: [GatewayIntentBits.Guilds, 'GuildVoiceStates'] });
+const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, 'GuildVoiceStates', GatewayIntentBits.GuildMessageReactions] });
 
 const DISCORD_TOKEN = process.env.DISCORD_TOKEN
 const CLIENT_ID = process.env.CLIENT_ID
