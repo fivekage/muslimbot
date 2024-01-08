@@ -11,7 +11,7 @@ module.exports.help = {
 }
 
 module.exports.run = async (client, interaction) => {
-    await interaction.deferReply({ ephemeral: true })
+    await interaction.deferReply()
 
     let { channel } = await interaction
     logger.info(`Quizz has been started by ${interaction.user.id}`)
@@ -36,7 +36,7 @@ module.exports.run = async (client, interaction) => {
         '5️⃣': ':five:'
     }
     const collectorFilter = (reaction, _user) => {
-        return Object.values(emojis).includes(reaction.emoji.name);
+        return Object.keys(emojis).includes(reaction.emoji.name);
     };
 
     const quizzQuestions = QuizzQuestions()
@@ -56,20 +56,29 @@ module.exports.run = async (client, interaction) => {
 
     const embedStart = new EmbedBuilder()
         .setTitle(`Quizz about Islam`)
-        .setDescription("This quizz will start in 5 seconds, you will have to answer 5 questions. You will have 30 seconds for each questions.")
+        .setDescription("This quizz will start in 5 seconds, you will have to answer 5 questions. You will have 15 seconds for each questions.")
         .setColor(vars.primaryColor)
         .setTimestamp()
-        .setFooter({ text: 'You have 30 seconds for each questions, good luck !' })
-    await interaction.editReply({ embeds: [embedStart], ephemeral: true })
+    await interaction.editReply({ embeds: [embedStart] })
 
     await sleep(5000)
     // Start quizz
+    const me = client.user
+
+    const editEmbedWithCorrectAnswser = (message, quizzQuestion, questionValid) => {
+        const correctEmbed = new EmbedBuilder()
+            .setColor(questionValid ? vars.greenColor : vars.redColor)
+            .addFields({ name: quizzQuestion.question, value: quizzQuestion.answers.map(a => `${a.emoji} ${a.answer} ${a.valid ? '✅' : '❌'}`).join('\n') })
+            .setFooter({ text: `Good answer was : ${quizzQuestion.answers.find(a => a.valid).answer}` })
+        message.edit({ embeds: [correctEmbed] })
+    }
+
+    const responses = []
     for (const quizzQuestion of quizzKeyValues) {
 
         // Send quizz
         const embed = new EmbedBuilder()
             .setColor(vars.primaryColor)
-            .setFooter({ text: '30 seconds left..' })
             .addFields({ name: quizzQuestion.question, value: quizzQuestion.answers.map(a => `${a.emoji} ${a.answer}`).join('\n') });
 
         const message = await channel.send({ embeds: [embed] })
@@ -78,34 +87,39 @@ module.exports.run = async (client, interaction) => {
         })
 
         // Awaiting reactions now
-        const responses = []
-        let anwsered = false
-        const collector = message.createReactionCollector({ collectorFilter, time: 30_000 });
-        collector.on('collect', r => responses.push(r.emoji.name));
+        let answered = false
+        const collector = message.createReactionCollector({ filter: collectorFilter, time: 15_000 });
+        collector.on('collect', r => {
+            if (r.users.cache.last().id != me.id) {
+                const validQuestion = quizzQuestion.answers.find(a => a.emoji == r.emoji.name).valid
+                responses.push({
+                    valid: validQuestion,
+                    user: r.users.cache.last().id
+                })
+                answered = true
+                editEmbedWithCorrectAnswser(message, quizzQuestion, validQuestion)
+            }
+        });
 
         await collector.on('end', async () => {
-
-            anwsered = true
-            const correctEmbed = new EmbedBuilder()
-                .setColor(vars.greenColor)
-                .addFields({ name: quizzQuestion.question, value: quizzQuestion.answers.map(a => `${a.emoji} ${a.answer} ${a.valid ? '✅' : '❌'}`).join('\n') });
-
-
-            await message.edit({ embeds: [correctEmbed] })
+            if (!answered)
+                editEmbedWithCorrectAnswser(message, quizzQuestion, false)
+            answered = true
         })
 
-        await waitFor(() => anwsered === true, 200, 60 * 10000) // checks every 200 milliseconds, 10 seconds timeout
+
+
+        await waitFor(() => answered === true, 200, 60 * 10000) // checks every 200 milliseconds, 15 seconds timeout
 
     }
-    logger.info("Quizz ended for guild ", interaction?.guild?.id ?? interaction.user.username)
+    logger.info("Quizz finished for ", interaction?.guild?.id ? `guild ${interaction.guild.name}` : `user ${interaction.user.username}`)
     const embed = new EmbedBuilder()
-        .setTitle(`Quizz ended`)
-        .setDescription("Thanks for playing !")
+        .setTitle(`Quizz finished for ${interaction.user.username}`)
+        .setDescription(`You have reached the end of the quizz, you have **${responses.filter(r => r.valid).length}** good answers.`)
         .setColor(vars.primaryColor)
         .setFooter({ text: 'MuslimBot 🕋 - For any help type /help command' })
 
     await channel.send({ embeds: [embed] })
-
 }
 
 

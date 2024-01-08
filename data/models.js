@@ -9,7 +9,7 @@ const sequelizeInstance = () => {
     const DB_PASSWORD = process.env.DB_PASSWORD
 
     if (!DB_HOST || !DB_USERNAME || !DB_PASSWORD) {
-        logger.error("Please provide a valid db host, username and password")
+        logger.fatal("Please provide a valid db host, username and password")
         process.exit(1)
     }
 
@@ -24,7 +24,7 @@ const sequelizeInstance = () => {
         dialect: 'mariadb',
         dialectModule: require('mariadb'),
         benchmark: true,  // <-- this one enables tracking execution time
-        logging: (sql, timingMs) => logger.debug(`${sql} - [Execution time: ${timingMs}ms]`)
+        logging: (sql, timingMs) => { timingMs > 10 ?? logger.debug(`${sql} - [Execution time: ${timingMs}ms]`) } // Log only if query time is greater than 10ms
     });
 };
 
@@ -34,7 +34,7 @@ module.exports.init = async (client) => {
         await sequelize.authenticate();
         logger.info('Connection has been established successfully.');
     } catch (error) {
-        logger.error('Unable to connect to the database:', error);
+        logger.fatal('Unable to connect to the database:', error);
         throw error
     }
 

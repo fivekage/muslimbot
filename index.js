@@ -4,6 +4,7 @@ const { initializationClient } = require('./utils/initialization_client.js')
 const { handleInteraction } = require('./utils/handle_interactions.js')
 const { handleNewGuild } = require('./utils/handle_newguild.js')
 const logger = require('./utils/logger.js')
+const log4js = require("log4js");
 const models = require('./data/models.js')
 const { dailyCallSchedulePrayers, schedulePrayersForTheDay } = require('./utils/schedule_notifications.js')
 const { dailyCallScheduleHadiths } = require('./utils/schedule_hadiths.js')
@@ -48,3 +49,8 @@ initializationClient(client, rest, DISCORD_TOKEN, CLIENT_ID, commands).catch(con
 
 
 
+process.on('exit', function (code) {
+    log4js.shutdown(() => { process.exit() })
+});
+
+process.on('SIGINT', function () { process.exit() })

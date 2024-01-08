@@ -1,3 +1,5 @@
+const logger = require('./logger');
+
 module.exports.handleInteraction = async (client, commands) => {
     client.on('interactionCreate', async interaction => {
         if (!interaction.isChatInputCommand()) return;
@@ -9,7 +11,7 @@ module.exports.handleInteraction = async (client, commands) => {
 
                 commands.find((command) => command.name == interaction.commandName).file.run(client, interaction);
             } catch (error) {
-                logger.error(error);
+                logger.fatal(error);
                 await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
             }
         }
