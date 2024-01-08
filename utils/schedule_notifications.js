@@ -1,6 +1,6 @@
 const schedule = require('node-schedule');
 const { Users, Subscriptions, Notifications } = require('../data/models.js');
-const { EmbedBuilder, UserFlags } = require('discord.js')
+const { EmbedBuilder } = require('discord.js')
 const vars = require('../commands/_general/vars.js')
 const logger = require('./logger.js')
 const { Op } = require('sequelize')
@@ -18,6 +18,12 @@ const schedulePrayerNotifications = async (client, subscription, prayer, prayerD
     // Set the time to the start of the day (midnight)
     currentDate.setHours(0, 0, 0, 0);
 
+    const notifExists = await NotificationsCtor.findOne({ where: { prayer: prayer, UserId: subscription.UserId, SubscriptionId: subscription.id, createdAt: { [Op.gt]: currentDate } } }) != null
+    if (notifExists) {
+        logger.warn(`Notification already exists for user ${userid}, job should be already scheduled`)
+        return
+    }
+
     schedule.scheduleJob(prayerDateTime, function (p) {
         client.users.fetch(userid).then(user => {
             const embed = new EmbedBuilder()
@@ -34,9 +40,13 @@ const schedulePrayerNotifications = async (client, subscription, prayer, prayerD
             // Update notification to sent
             NotificationsCtor.findOne({ where: { prayer: p, UserId: subscription.UserId, SubscriptionId: subscription.id, createdAt: { [Op.gt]: currentDate } } })
                 .then(notification => {
-                    notification.sent = true
-                    notification.save()
-                    logger.info(`Notification ${notification.id} sent for user ${userid}`)
+                    if (notification) {
+                        notification.sent = true
+                        notification.save()
+                        logger.info(`Notification ${notification.id} sent for user ${userid}`)
+                    } else {
+                        logger.warn(`Notification not found for user ${userid}`)
+                    }
                 }).catch(error => {
                     logger.error(`Error during update notification for user ${userid}`, error)
                 })

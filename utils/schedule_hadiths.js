@@ -83,7 +83,7 @@ const dailyCallScheduleHadiths = (client) => {
                     channel.send({ embeds: [replyEmbed] })
                     logger.info(`Hadith sent to guild ${guild.guildId}`)
                 } catch (error) {
-                    logger.error("Error during create embed for hadith", error)
+                    logger.fatal("Error during create embed for hadith", error)
                     return
                 }
             });
