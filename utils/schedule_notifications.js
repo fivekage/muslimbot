@@ -22,7 +22,6 @@ const schedulePrayerNotifications = async (client, subscription, prayer, prayerD
     currentDate.setHours(0, 0, 0, 0);
 
     if (jobScheduled[userid] && jobScheduled[userid].includes(prayer)) {
-        logger.warn(`Job already scheduled for user ${userid} and prayer ${prayer}`)
         return
     }
 
@@ -59,7 +58,6 @@ const schedulePrayerNotifications = async (client, subscription, prayer, prayerD
     if (!jobScheduled[userid]) jobScheduled[userid] = []
     jobScheduled[userid].push(prayer)
 
-    logger.info(`Job ${prayer} scheduled at ${prayerDateTime.toLocaleString()} for user ${userid}`);
 
     // Create notification if not exists
     const [notification, created] = await NotificationsCtor.findOrCreate({
@@ -68,7 +66,8 @@ const schedulePrayerNotifications = async (client, subscription, prayer, prayerD
             prayer: prayer,
             UserId: subscription.UserId,
             SubscriptionId: subscription.id,
-            sent: false
+            sent: false,
+            createdAt: new Date()
         }
     }).catch(error => {
         logger.error(`Error during create notification for user ${userid}`, error)
@@ -104,14 +103,18 @@ const getPrayerTimes = async (city, country) => {
 const schedulePrayersForTheDay = (client) => {
     Subscriptions().findAll({ where: { subscriptionEnabled: true }, include: Users() }).then(subscriptions => {
         subscriptions.forEach(subscription => {
-            getPrayerTimes(subscription.city, subscription.country).then(prayers => {
-                Object.keys(prayers).forEach(prayer => {
-                    if (Object.keys(prayersMessages).includes(prayer)) {
-                        const prayerDateTime = new Date(prayers[prayer])
-                        schedulePrayerNotifications(client, subscription, prayer, prayerDateTime)
-                    }
+            getPrayerTimes(subscription.city, subscription.country)
+                .then(prayers => {
+                    Object.keys(prayers).forEach(prayer => {
+                        if (Object.keys(prayersMessages).includes(prayer)) {
+                            const prayerDateTime = new Date(prayers[prayer])
+                            schedulePrayerNotifications(client, subscription, prayer, prayerDateTime)
+                        }
+                    })
                 })
-            })
+                .finally(() => {
+                    logger.debug(`Job scheduled for user ${subscription.User.userId}`, jobScheduled[subscription.User.userId])
+                })
         });
     })
 }
