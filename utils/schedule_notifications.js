@@ -68,7 +68,8 @@ const schedulePrayerNotifications = async (client, subscription, prayer, prayerD
             prayer: prayer,
             UserId: subscription.UserId,
             SubscriptionId: subscription.id,
-            sent: false
+            sent: false,
+            createdAt: new Date()
         }
     }).catch(error => {
         logger.error(`Error during create notification for user ${userid}`, error)
