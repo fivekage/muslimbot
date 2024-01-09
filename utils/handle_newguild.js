@@ -27,7 +27,7 @@ module.exports.handleNewGuild = async (client) => {
             logger.warn("No channel to send the welcome message")
             return;
         }
-        if (!client.guilds.cache.get(guild.id).members.me.permissionsIn(channel.id).has(PermissionsBitField.Flags.SendMessages)) {
+        if (!guild.members.me.permissionsIn(channel.id).has(PermissionsBitField.Flags.SendMessages)) {
             logger.warn(`Guild ${guild.name} doesn't have the permission to send messages in channel ${channel.name}`)
             return;
         }

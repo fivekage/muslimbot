@@ -77,7 +77,6 @@ const schedulePrayerNotifications = async (client, subscription, prayer, prayerD
         // created will be true if a new user was created
         logger.info(`Notification ${notification.id} created for user ${userid}`)
     }
-
 }
 
 const dailyCallSchedulePrayers = (client) => {

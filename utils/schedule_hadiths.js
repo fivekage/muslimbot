@@ -10,6 +10,7 @@ const hadithAPIUrl = process.env.HADITH_API_URL
 
 const dailyCallScheduleHadiths = (client) => {
     if (process.env.NODE_ENV !== 'production' && process.env.NODE_ENV === 'development') {
+        logger.info("Hadiths schedule in development mode")
         rule.hour = new schedule.Range(0, 59); // Todo: change to 0
         rule.minute = new schedule.Range(0, 59); // Todo: change to 0
     }
@@ -38,17 +39,16 @@ const dailyCallScheduleHadiths = (client) => {
         }
 
         // Send hadith to all guilds
-        guilds.findAll({ where: { dailyHadithEnabled: true } }).then(guilds => {
-            guilds.forEach(guild => {
-                const guildCache = client.guilds.cache.get(guild.guildId)
-                const channel = guildCache?.channels.cache.find(channel => channel.type == 0)
+        guilds.findAll({ where: { dailyHadithEnabled: 1 } }).then(guilds => {
+            guilds.forEach(async guild => {
+                const guildFetched = await client.guilds.fetch(guild.guildId).catch(() => logger.error(`Error during fetch guild ${guild.guildId}`))
+                const channel = guildFetched?.channels.cache.find(channel => channel.type == 0)
 
                 if (!channel) {
                     logger.warn("No channel to send the hadith in guild", guild.guildId)
                     return;
                 }
-
-                if (!client.guilds.cache.get(guild.id).members.me.permissionsIn(channel.id).has(PermissionsBitField.Flags.SendMessages)) {
+                if (!guildFetched.members.me.permissionsIn(channel.id).has(PermissionsBitField.Flags.SendMessages)) {
                     logger.warn(`Guild ${guild.name} doesn't have the permission to send messages in channel ${channel.name}`)
                     return;
                 }
@@ -58,8 +58,8 @@ const dailyCallScheduleHadiths = (client) => {
                 const hadithBook = hadith['book'].replace('`', '')
                 const hadithChapterName = hadith['chapterName'].replace('`', '')
                 const hadithBookName = hadith['bookName'].replace(/[\t\n]/g, '');
-                const hadithText = hadith['hadith_english'].replace('`', '').trim().replace(/[\t\n]/g, '').replace('"', '')
-                const hadithHeader = hadith['header']?.replace('`', '') ?? '\u200B'
+                const hadithText = hadith['hadith_english'].replace('`', '').trim().replace(/[\t\n]/g, '').replace('“', '').replace('”', '')
+                const hadithHeader = hadith['header']?.replace('`', '').replace('\n', '') ?? '\u200B'
 
                 try {
                     const replyEmbed = new EmbedBuilder()
@@ -72,7 +72,7 @@ const dailyCallScheduleHadiths = (client) => {
                             },
                             {
                                 name: '\u200B',
-                                value: `"*${hadithText}*"`,
+                                value: `“*${hadithText}*”`,
                             },
                         ])
                         .setColor(vars.primaryColor)
@@ -80,13 +80,16 @@ const dailyCallScheduleHadiths = (client) => {
                         .setFooter({ text: ` ${hadith['refno']}` })
                         .setTimestamp();
 
-                    channel.send({ embeds: [replyEmbed] })
+                    channel.send({ embeds: [replyEmbed] }).catch(error => {
+                        logger.error(`Error during send hadith for guild ${guild.guildId}`, error)
+                    })
                     logger.info(`Hadith sent to guild ${guild.guildId}`)
                 } catch (error) {
                     logger.fatal("Error during create embed for hadith", error)
                     return
                 }
             });
+            logger.info(`Hadith sent to ${guilds.length} guilds`)
         })
     });
 
