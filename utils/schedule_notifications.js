@@ -5,6 +5,9 @@ const vars = require('../commands/_general/vars.js')
 const logger = require('./logger.js')
 const { Op } = require('sequelize')
 
+// Store job scheduled for each user
+const jobScheduled = {}
+
 const schedulePrayerNotifications = async (client, subscription, prayer, prayerDateTime) => {
     const userid = subscription.User.userId
     const NotificationsCtor = Notifications()
@@ -18,9 +21,8 @@ const schedulePrayerNotifications = async (client, subscription, prayer, prayerD
     // Set the time to the start of the day (midnight)
     currentDate.setHours(0, 0, 0, 0);
 
-    const notifExists = await NotificationsCtor.findOne({ where: { prayer: prayer, UserId: subscription.UserId, SubscriptionId: subscription.id, createdAt: { [Op.gt]: currentDate } } }) != null
-    if (notifExists) {
-        logger.warn(`Notification already exists for user ${userid}, job should be already scheduled`)
+    if (jobScheduled[userid] && jobScheduled[userid].includes(prayer)) {
+        logger.warn(`Job already scheduled for user ${userid} and prayer ${prayer}`)
         return
     }
 
@@ -44,6 +46,7 @@ const schedulePrayerNotifications = async (client, subscription, prayer, prayerD
                         notification.sent = true
                         notification.save()
                         logger.info(`Notification ${notification.id} sent for user ${userid}`)
+                        jobScheduled[userid].splice(jobScheduled[userid].indexOf(p), 1) // Remove prayer from scheduled job
                     } else {
                         logger.warn(`Notification not found for user ${userid}`)
                     }
@@ -53,18 +56,27 @@ const schedulePrayerNotifications = async (client, subscription, prayer, prayerD
         })
     }.bind(null, prayer));
 
+    if (!jobScheduled[userid]) jobScheduled[userid] = []
+    jobScheduled[userid].push(prayer)
+
     logger.info(`Job ${prayer} scheduled at ${prayerDateTime.toLocaleString()} for user ${userid}`);
 
     // Create notification if not exists
-    const notification = await NotificationsCtor.findOne({ where: { prayer: prayer, UserId: subscription.UserId, SubscriptionId: subscription.id, createdAt: { [Op.gt]: currentDate } } })
-    if (notification) {
-        logger.warn(`Notification ${notification.id} already exists for user ${userid}`)
-        return
-    }
-
-    NotificationsCtor.create({ prayer: prayer, UserId: subscription.UserId, SubscriptionId: subscription.id, sent: false }).catch(error => {
+    const [notification, created] = await NotificationsCtor.findOrCreate({
+        where: { prayer: prayer, UserId: subscription.UserId, SubscriptionId: subscription.id, createdAt: { [Op.gt]: currentDate } },
+        defaults: {
+            prayer: prayer,
+            UserId: subscription.UserId,
+            SubscriptionId: subscription.id,
+            sent: false
+        }
+    }).catch(error => {
         logger.error(`Error during create notification for user ${userid}`, error)
     })
+    if (created) {
+        // created will be true if a new user was created
+        logger.info(`Notification ${notification.id} created for user ${userid}`)
+    }
 
 }
 
