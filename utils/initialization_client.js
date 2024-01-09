@@ -10,7 +10,8 @@ module.exports.initializationClient = async (client, rest, discordToken, clientI
                 name: command.name,
                 description: command.description,
                 options: command.options,
-                choices: command.choices
+                choices: command.choices,
+
             }
         })
         await rest.put(Routes.applicationCommands(clientId), { body: commands });

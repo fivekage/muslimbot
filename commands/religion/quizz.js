@@ -16,7 +16,8 @@ module.exports.run = async (client, interaction) => {
     let { channel } = await interaction
     logger.info(`Quizz has been started by ${interaction.user.id}`)
 
-    if (interaction.guild && !client.guilds.cache.get(interaction.guild.id).members.me.permissionsIn(channel.id).has(PermissionsBitField.Flags.SendMessages)) {
+    const guildFetched = await client.guilds.fetch(interaction.guild.id)
+    if (interaction.guild && !guildFetched.members.me.permissionsIn(channel.id).has(PermissionsBitField.Flags.SendMessages)) {
         logger.warn(`Guild ${interaction.guild.name} doesn't have the permission to send messages in channel ${channel.name}`)
         return;
     }

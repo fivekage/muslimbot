@@ -1,7 +1,16 @@
 const logger = require('./logger');
+const { Events } = require('discord.js');
 
 module.exports.handleInteraction = async (client, commands) => {
-    client.on('interactionCreate', async interaction => {
+    client.on(Events.InteractionCreate, async interaction => {
+
+        if (interaction.isUserContextMenuCommand()) {
+            // Get the User's username from context menu
+            const { username } = interaction.targetUser;
+            console.log(username);
+        }
+
+
         if (!interaction.isChatInputCommand()) return;
 
         if (commands.some((command) => command.name == interaction.commandName)) {
