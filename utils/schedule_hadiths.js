@@ -42,7 +42,8 @@ const dailyCallScheduleHadiths = (client) => {
         guilds.findAll({ where: { dailyHadithEnabled: 1 } }).then(guilds => {
             guilds.forEach(async guild => {
                 const guildFetched = await client.guilds.fetch(guild.guildId).catch(() => logger.error(`Error during fetch guild ${guild.guildId}`))
-                const channel = guildFetched?.channels.cache.find(channel => channel.type == 0)
+                let channel = guildFetched?.channels.cache.find(channel => channel.id == guild.channelAnnouncementId)
+                if (!channel) channel = guildFetched?.channels.cache.find(channel => channel.type == 0)
 
                 if (!channel) {
                     logger.warn("No channel to send the hadith in guild", guild.guildId)
@@ -74,10 +75,18 @@ const dailyCallScheduleHadiths = (client) => {
                                 name: '\u200B',
                                 value: `“*${hadithText}*”`,
                             },
+                            {
+                                name: '\u200B',
+                                value: hadith['refno'],
+                            },
                         ])
                         .setColor(vars.primaryColor)
                         .setThumbnail("https://i.imgur.com/DCFtkTv.png")
-                        .setFooter({ text: ` ${hadith['refno']}` })
+                        .setFooter({
+                            text:
+                                !guild.channelAnnouncementId ? 'You can configure a channel to receive theses hadith with /hadith command' :
+                                    'MuslimBot 🕋 - For any help type /help command'
+                        })
                         .setTimestamp();
 
                     channel.send({ embeds: [replyEmbed] }).catch(error => {

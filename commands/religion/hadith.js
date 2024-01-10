@@ -1,5 +1,5 @@
 const { Guilds } = require('../../data/models')
-const { EmbedBuilder } = require('discord.js')
+const { EmbedBuilder, ApplicationCommandOptionType, ChannelType } = require('discord.js')
 const logger = require('../../utils/logger.js')
 const vars = require('../_general/vars.js')
 
@@ -24,6 +24,13 @@ module.exports.help = {
                 },
             ],
         },
+        {
+            name: 'channel',
+            description: 'Channel where to send daily hadiths',
+            required: false,
+            type: ApplicationCommandOptionType.Channel,
+            channel_types: [ChannelType.GroupDM, ChannelType.GuildText, ChannelType.GuildAnnouncement],
+        },
     ],
 }
 
@@ -46,6 +53,7 @@ module.exports.run = async (_client, interaction) => {
         return interaction.reply({ embeds: [embed] })
     }
     guild.dailyHadithEnabled = hadithEnabled
+    guild.channelAnnouncementId = interaction.options.getChannel('channel')?.id
     guild.save()
     logger.info(`Hadiths option has been changed with ${hadithEnabled} value for guild ${interaction.guild.id}`)
 
@@ -54,7 +62,7 @@ module.exports.run = async (_client, interaction) => {
     const embed = new EmbedBuilder()
         .setTitle(`Hadith of the day`)
         .setDescription(hadithEnabled ?
-            "Hadiths are now enabled, you will receive a hadith in your server everyday" :
+            `Hadiths are now enabled, you will receive a hadith in your server everyday` :
             "Hadiths are now disabled")
         .setColor(vars.primaryColor)
         .setTimestamp()
