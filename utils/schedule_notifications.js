@@ -11,12 +11,10 @@ const jobScheduled = {}
 const schedulePrayerNotifications = async (client, subscription, prayer, prayerDateTime) => {
     const userid = subscription.User.userId
     const NotificationsCtor = Notifications()
-    if (prayerDateTime < new Date()) {
-        logger.warn(`Prayer ${prayer} already passed for user ${userid}`)
-        return
-    }
-
     const currentDate = new Date();
+
+    if (prayerDateTime < currentDate) return;
+
 
     // Set the time to the start of the day (midnight)
     currentDate.setHours(0, 0, 0, 0);
@@ -112,8 +110,11 @@ const schedulePrayersForTheDay = (client) => {
                         }
                     })
                 })
+                .catch(error => {
+                    logger.error(`Error during retrieve prayers for user ${subscription.User.userId}`, error)
+                })
                 .finally(() => {
-                    logger.debug(`Job scheduled for user ${subscription.User.userId}`, jobScheduled[subscription.User.userId])
+                    logger.debug(`Job scheduled for user ${subscription.User.userId} :`, jobScheduled[subscription.User.userId])
                 })
         });
     })

@@ -90,6 +90,7 @@ module.exports.init = async (client) => {
         },
         guildId: DataTypes.STRING,
         guildName: DataTypes.STRING,
+        channelAnnouncementId: DataTypes.STRING,
         dailyHadithEnabled: {
             type: DataTypes.BOOLEAN,
             defaultValue: true,
