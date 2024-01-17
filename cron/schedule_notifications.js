@@ -2,7 +2,7 @@ const schedule = require('node-schedule');
 const { Users, Subscriptions, Notifications } = require('../data/models.js');
 const { EmbedBuilder } = require('discord.js')
 const vars = require('../commands/_general/vars.js')
-const logger = require('./logger.js')
+const logger = require('../utils/logger.js')
 const { Op } = require('sequelize')
 
 // Store job scheduled for each user

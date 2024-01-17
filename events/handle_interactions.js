@@ -1,4 +1,4 @@
-const logger = require('./logger');
+const logger = require('../utils/logger');
 const { Events } = require('discord.js');
 
 module.exports.handleInteraction = async (client, commands) => {
