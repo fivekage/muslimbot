@@ -1,12 +1,13 @@
 
 const { Guilds } = require('../data/models.js')
-const logger = require('./logger.js')
+const logger = require('../utils/logger.js')
 const schedule = require('node-schedule')
 const { EmbedBuilder, PermissionsBitField } = require('discord.js')
 const vars = require('../commands/_general/vars.js')
 const rule = new schedule.RecurrenceRule();
 
 const hadithAPIUrl = process.env.HADITH_API_URL
+const NOT_CONFIGURED_CHANNEL = 'NOT_CONFIGURED_CHANNEL'
 
 const dailyCallScheduleHadiths = (client) => {
     if (process.env.NODE_ENV !== 'production' && process.env.NODE_ENV === 'development') {
@@ -39,18 +40,29 @@ const dailyCallScheduleHadiths = (client) => {
         }
 
         // Send hadith to all guilds
-        guilds.findAll({ where: { dailyHadithEnabled: 1 } }).then(guilds => {
-            guilds.forEach(async guild => {
-                const guildFetched = await client.guilds.fetch(guild.guildId).catch(() => logger.error(`Error during fetch guild ${guild.guildId}`))
+        guilds.findAll({ where: { dailyHadithEnabled: 1 } }).then(guildsFiltered => {
+            guildsFiltered.forEach(async guild => {
+                const guildFetched = await client.guilds.fetch(guild.guildId).catch(() => {
+                    logger.error(`Error during fetch guild ${guild.guildId}`)
+                    return
+                })
+
+
                 let channel = guildFetched?.channels.cache.find(channel => channel.id == guild.channelAnnouncementId)
-                if (!channel) channel = guildFetched?.channels.cache.find(channel => channel.type == 0)
+                if (guild.channelAnnouncementId === NOT_CONFIGURED_CHANNEL || !channel) channel = guildFetched?.channels.cache.find(channel => channel.type == 0)
 
                 if (!channel) {
                     logger.warn("No channel to send the hadith in guild", guild.guildId)
                     return;
                 }
                 if (!guildFetched.members.me.permissionsIn(channel.id).has(PermissionsBitField.Flags.SendMessages)) {
-                    logger.warn(`Guild ${guild.name} doesn't have the permission to send messages in channel ${channel.name}`)
+                    logger.warn(`Bot doesn't have the permission to send messages in channel [${channel.name}] for guild [${guildFetched.name}]`)
+
+                    if (!guild.channelAnnouncementId) {
+                        notifyAdministratorFromMissingChannel(guilds, guild, guildFetched, channel).catch(error => {
+                            logger.error("Error during notify administrator from missing channel", error)
+                        })
+                    }
                     return;
                 }
 
@@ -124,6 +136,37 @@ const getRandomHadith = async () => {
 const hadithsBooks = [
     "bukhari", "muslim", "abudawud", "ibnmajah", "tirmidhi"
 ]
+
+const notifyAdministratorFromMissingChannel = async (guildsTable, guildEntity, guildFetched, channel) => {
+    let admin = await guildFetched.fetchOwner().catch(() => {
+        throw Error(`Error during fetch owner guild ${guild.guildId}`)
+    })
+
+    if (admin) {
+        const embed = new EmbedBuilder()
+            .addFields([
+                {
+                    name: 'For your information',
+                    value: `No channel to send the hadith in your guild <${guildFetched.name}>, please configure a channel with \`/hadith\` command`,
+                },
+                {
+                    name: 'Also, you can',
+                    value: `Give me the permission to send messages in the channel <#${channel.id}>`,
+                },
+                {
+                    name: 'Otherwise',
+                    value: `You can kick me and invite me again, MuslimBot will automatically create a channel to send the hadiths`,
+                }
+            ])
+            .setAuthor({ name: 'MuslimBot' })
+            .setColor(vars.primaryColor)
+            .setFooter({
+                text: "Click 🆗 if you don't want to configure a channel"
+            })
+        admin.send({ embeds: [embed] })
+        guildsTable.update({ channelAnnouncementId: NOT_CONFIGURED_CHANNEL }, { where: { guildId: guildEntity.guildId } })
+    }
+}
 
 module.exports = {
     dailyCallScheduleHadiths

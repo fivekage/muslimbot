@@ -1,13 +1,13 @@
-const { Client, REST, GatewayIntentBits, Intents, } = require('discord.js')
+const { Client, REST, GatewayIntentBits, } = require('discord.js')
 const { loadAllCommands } = require('./utils/load_commands.js')
 const { initializationClient } = require('./utils/initialization_client.js')
-const { handleInteraction } = require('./utils/handle_interactions.js')
-const { handleNewGuild } = require('./utils/handle_newguild.js')
+const { handleInteraction } = require('./events/handle_interactions.js')
+const { handleNewGuild } = require('./events/handle_newguild.js')
 const logger = require('./utils/logger.js')
 const log4js = require("log4js");
 const models = require('./data/models.js')
-const { dailyCallSchedulePrayers, schedulePrayersForTheDay } = require('./utils/schedule_notifications.js')
-const { dailyCallScheduleHadiths } = require('./utils/schedule_hadiths.js')
+const { dailyCallSchedulePrayers, schedulePrayersForTheDay } = require('./cron/schedule_notifications.js')
+const { dailyCallScheduleHadiths } = require('./cron/schedule_hadiths.js')
 const { playQuran } = require('./utils/play_quran.js')
 require('dotenv').config();
 

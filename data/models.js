@@ -66,7 +66,7 @@ module.exports.init = async (client) => {
     }, {
         hooks: {
             afterCreate: async (subscription, options) => {
-                const { schedulePrayerNewSubscription } = require('../utils/schedule_notifications.js')
+                const { schedulePrayerNewSubscription } = require('../cron/schedule_notifications.js')
                 schedulePrayerNewSubscription(client, subscription)
             },
         }
@@ -90,6 +90,7 @@ module.exports.init = async (client) => {
         },
         guildId: DataTypes.STRING,
         guildName: DataTypes.STRING,
+        isStillInGuild: DataTypes.BOOLEAN,
         channelAnnouncementId: DataTypes.STRING,
         dailyHadithEnabled: {
             type: DataTypes.BOOLEAN,
