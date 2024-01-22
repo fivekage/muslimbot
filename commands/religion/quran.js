@@ -17,7 +17,7 @@ module.exports.run = async (client, interaction) => {
         interaction.reply({ content: 'You need to join a voice channel first!', ephemeral: true })
         return;
     }
-    const guildFetched = await client.guilds.fetch(guild.guildId)
+    const guildFetched = await client.guilds.fetch(interaction.guild.id)
     if (!guildFetched.members.me.permissionsIn(channel.id).has(PermissionsBitField.Flags.Connect)) {
         logger.warn(`Guild ${guild.name} doesn't have the permission to send messages in channel ${channel.name}`)
         return;

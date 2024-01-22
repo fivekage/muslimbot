@@ -4,6 +4,7 @@
 .env
 
 quran/*.mp3
+quran/*.ogg
 ### Node ###
 # Logs
 logs
