@@ -12,41 +12,19 @@ const {
 } = require('@discordjs/voice');
 const logger = require('./logger.js')
 
-
 const player = createAudioPlayer({
     behaviors: {
-        noSubscriber: NoSubscriberBehavior.Play,
+        noSubscriber: NoSubscriberBehavior.Pause,
     },
 })
 
-
-
-
 module.exports.playQuran = (client = null) => {
-    // DISABLED FOR NOW BC OF MEMORY ISSUES
-    return;
-
     const quranVerses = retrieveQuranVerses();
     const randomVerse = quranVerses[Math.floor(Math.random() * quranVerses.length)]
     const fullPathFile = `./quran/${randomVerse}`
-    const input = fs.createReadStream(fullPathFile);
-    const transcoder = new prism.FFmpeg({
-        args: [
-            '-analyzeduration', '0',
-            '-loglevel', '0',
-            '-f', 's16le',
-            '-ar', '48000',
-            '-ac', '2',
-        ],
-    });
+    const input = fs.createReadStream(fullPathFile, { type: 'ogg/opus' });
 
-    const opus = new prism.opus.Encoder({ rate: 48000, channels: 1 });
-
-    input
-        .pipe(transcoder)
-        .pipe(opus);
-
-    const name = randomVerse.replace('.mp3', '')
+    const name = randomVerse.replace('.ogg', '')
     player.play(
         createAudioResource(input, {
             metadata: {

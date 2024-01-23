@@ -9,9 +9,9 @@ module.exports.retrieveQuranVerses = () => {
         // Read the files in the folder
         const files = fs.readdirSync(folderPath);
         // Filter out only the mp3 files
-        const mp3Files = files.filter(file => file.endsWith('.mp3'));
+        const audioFiles = files.filter(file => file.endsWith('.ogg'));
 
-        return mp3Files
+        return audioFiles
 
     } catch (err) {
         logger.fatal('Error reading quran directory:', err);
