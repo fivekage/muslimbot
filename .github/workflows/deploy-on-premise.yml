@@ -95,11 +95,24 @@ jobs:
           id: package-version
           run: echo "::set-output name=version::$(jq -r '.version' package.json)"
           
-        - name: package-version-to-git-tag
-          uses: pkgdeps/git-tag-action@v2
-          with:
-            github_token: ${{ secrets.GITHUB_TOKEN }}
-            github_repo: ${{ github.repository }}
-            git_commit_sha: ${{ github.sha }}
-            version: ${{ steps.package-version.outputs.version }}
-            git_tag_prefix: "v"
+        - name: Generate Git Tag
+          id: generate_tag
+          run: |
+            VERSION_PREFIX="v"
+            VERSION_MAJOR_MINOR="1.0"
+            VERSION_PATCH=$(git tag --list "${VERSION_PREFIX}${VERSION_MAJOR_MINOR}.*" --sort=-version:refname | head -n 1 | grep -oE '[0-9]+$')
+            if [ -z "$VERSION_PATCH" ]; then
+              VERSION_PATCH=0
+            else
+              VERSION_PATCH=$((VERSION_PATCH + 1))
+            fi
+            NEW_TAG="${VERSION_PREFIX}${VERSION_MAJOR_MINOR}.${VERSION_PATCH}"
+            echo "Generated new tag: $NEW_TAG"
+            echo "NEW_TAG=$NEW_TAG" >> $GITHUB_ENV
+        
+        - name: Push Git Tag
+          run: |
+            git config user.name "GitHub Actions"
+            git config user.email "github-actions@users.noreply.github.com"
+            git tag $NEW_TAG
+            git push origin $NEW_TAG

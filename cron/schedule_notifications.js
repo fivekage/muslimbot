@@ -19,10 +19,12 @@ const schedulePrayerNotifications = async (client, subscription, prayer, prayerD
     // Set the time to the start of the day (midnight)
     currentDate.setHours(0, 0, 0, 0);
 
+    // Check if the notification is already scheduled
     if (jobScheduled[userid] && jobScheduled[userid].includes(prayer)) {
         return
     }
 
+    // Schedule notification
     schedule.scheduleJob(prayerDateTime, function (p) {
         client.users.fetch(userid).then(user => {
             const embed = new EmbedBuilder()
@@ -47,8 +49,10 @@ const schedulePrayerNotifications = async (client, subscription, prayer, prayerD
                     } else {
                         logger.warn(`Notification not found for user ${userid}`)
                     }
-                }).catch(error => {
-                    logger.error(`Error during update notification for user ${userid}`, error)
+                }).catch(() => {
+                    logger.error(`Error during update notification for user ${userid}`)
+                    subscription.subscriptionEnabled = false // Disable subscription, user not reachable, he has probably blocked the bot or something like that
+                    subscription.save()
                 })
         })
     }.bind(null, prayer));
