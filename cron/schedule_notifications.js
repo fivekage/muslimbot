@@ -4,7 +4,7 @@ const { EmbedBuilder } = require('discord.js')
 const vars = require('../commands/_general/vars.js')
 const logger = require('../utils/logger.js')
 const { Op } = require('sequelize')
-
+const { retrievePrayersOfTheDay } = require('../utils/retrieve_prayers.js')
 // Store job scheduled for each user
 const jobScheduled = {}
 
@@ -89,23 +89,10 @@ const dailyCallSchedulePrayers = (client) => {
     logger.info(`Job Schedule Prayers ${job.name} scheduled at ${job.nextInvocation()}`);
 }
 
-const getPrayerTimes = async (city, country) => {
-    const API_ENDPOINT = `http://api.aladhan.com/v1/timingsByAddress?address=${city},${country}&iso8601=true`
-    try {
-        const response = await fetch(API_ENDPOINT)
-        const data = await response.json()
-        return data['data']['timings']
-    }
-    catch (error) {
-        logger.warn("Error during retrieve prayers", error)
-        return null
-    }
-}
-
 const schedulePrayersForTheDay = (client) => {
     Subscriptions().findAll({ where: { subscriptionEnabled: true }, include: Users() }).then(subscriptions => {
         subscriptions.forEach(subscription => {
-            getPrayerTimes(subscription.city, subscription.country)
+            retrievePrayersOfTheDay(subscription.city, subscription.country, true)
                 .then(prayers => {
                     Object.keys(prayers).forEach(prayer => {
                         if (Object.keys(prayersMessages).includes(prayer)) {
@@ -130,7 +117,7 @@ const schedulePrayerNewSubscription = async (client, subscription) => {
     logger.info(`New subscription for user ${subscriptionWithUser.User.userId}`)
     if (!subscriptionWithUser) throw new Error(`Subscription ${subscription.id} not found`)
 
-    const prayers = await getPrayerTimes(subscriptionWithUser.city, subscriptionWithUser.country)
+    const prayers = await retrievePrayersOfTheDay(subscriptionWithUser.city, subscriptionWithUser.country, true)
     Object.keys(prayers).forEach(prayer => {
         if (Object.keys(prayersMessages).includes(prayer)) {
             const prayerDateTime = new Date(prayers[prayer])

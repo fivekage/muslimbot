@@ -43,13 +43,18 @@ const dailyCallScheduleHadiths = (client) => {
         guilds.findAll({ where: { dailyHadithEnabled: 1 } }).then(guildsFiltered => {
             guildsFiltered.forEach(async guild => {
                 const guildFetched = await client.guilds.fetch(guild.guildId).catch(() => {
-                    logger.error(`Error during fetch guild ${guild.guildId}`)
+                    logger.error(`Error during fetch guild ${guild.guildId}, notifications will be disabled for this guild`)
+                    guild.isStillInGuild = false;
+                    guild.save()
                     return
                 })
 
 
                 let channel = guildFetched?.channels.cache.find(channel => channel.id == guild.channelAnnouncementId)
-                if (guild.channelAnnouncementId === NOT_CONFIGURED_CHANNEL || !channel) channel = guildFetched?.channels.cache.find(channel => channel.type == 0)
+                // Fetch channels which bot can send messages
+
+                if (guild.channelAnnouncementId === NOT_CONFIGURED_CHANNEL || !channel)
+                    channel = guildFetched?.channels.cache.find(channel => channel.type == 0 && guildFetched.members.me.permissionsIn(channel.id).has(PermissionsBitField.Flags.SendMessages))
 
                 if (!channel) {
                     logger.warn("No channel to send the hadith in guild", guild.guildId)
@@ -58,11 +63,9 @@ const dailyCallScheduleHadiths = (client) => {
                 if (!guildFetched.members.me.permissionsIn(channel.id).has(PermissionsBitField.Flags.SendMessages)) {
                     logger.warn(`Bot doesn't have the permission to send messages in channel [${channel.name}] for guild [${guildFetched.name}]`)
 
-                    if (!guild.channelAnnouncementId) {
-                        notifyAdministratorFromMissingChannel(guilds, guild, guildFetched, channel).catch(error => {
-                            logger.error("Error during notify administrator from missing channel", error)
-                        })
-                    }
+                    notifyAdministratorFromMissingChannel(guilds, guild, guildFetched, channel).catch(error => {
+                        logger.error("Error during notify administrator from missing channel", error)
+                    })
                     return;
                 }
 
@@ -120,9 +123,9 @@ const dailyCallScheduleHadiths = (client) => {
 const getRandomHadith = async () => {
     const hadithBook = hadithsBooks[Math.floor(Math.random() * hadithsBooks.length)]
 
-    const API_ENDPOINT = `${hadithAPIUrl}${hadithBook}`
+    const API_ENDPOINT_HADITH = `${hadithAPIUrl}${hadithBook}`
     try {
-        const response = await fetch(API_ENDPOINT)
+        const response = await fetch(API_ENDPOINT_HADITH)
         const data = await response.json()
         logger.info("Hadih retrieved successfully from API")
         return data['data']
@@ -150,19 +153,21 @@ const notifyAdministratorFromMissingChannel = async (guildsTable, guildEntity, g
                     value: `No channel to send the hadith in your guild <${guildFetched.name}>, please configure a channel with \`/hadith\` command`,
                 },
                 {
-                    name: 'Also, you can',
+                    name: 'Or',
                     value: `Give me the permission to send messages in the channel <#${channel.id}>`,
                 },
                 {
-                    name: 'Otherwise',
+                    name: 'Also, you can',
                     value: `You can kick me and invite me again, MuslimBot will automatically create a channel to send the hadiths`,
+                },
+                {
+                    name: 'Otherwise',
+                    value: `If you dont wan't to receive the hadiths, you can disable it with \`/hadith\` command`,
                 }
             ])
             .setAuthor({ name: 'MuslimBot' })
             .setColor(vars.primaryColor)
-            .setFooter({
-                text: "Click 🆗 if you don't want to configure a channel"
-            })
+            .setFooter({ text: 'MuslimBot 🕋 - For any help type /help command' });
         admin.send({ embeds: [embed] })
         guildsTable.update({ channelAnnouncementId: NOT_CONFIGURED_CHANNEL }, { where: { guildId: guildEntity.guildId } })
     }

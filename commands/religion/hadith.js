@@ -27,7 +27,7 @@ module.exports.help = {
         {
             name: 'channel',
             description: 'Channel where to send daily hadiths',
-            required: false,
+            required: true,
             type: ApplicationCommandOptionType.Channel,
             channel_types: [ChannelType.GroupDM, ChannelType.GuildText, ChannelType.GuildAnnouncement],
         },
@@ -35,10 +35,10 @@ module.exports.help = {
 }
 
 module.exports.run = async (_client, interaction) => {
-    if (!interaction.inGuild()) return interaction.reply("This command is only available in a server")
+    if (!interaction.inGuild()) return interaction.reply({ content: "This command is only available in a server", ephemeral: true })
 
     const hadithEnabled = interaction.options.getBoolean('enabled')
-    if (hadithEnabled === null) return interaction.reply("You must specify if you want to enable or disable daily hadiths")
+    if (hadithEnabled === null) return interaction.reply({ content: "You must specify if you want to enable or disable daily hadiths", ephemeral: true })
 
     const guilds = Guilds()
 
