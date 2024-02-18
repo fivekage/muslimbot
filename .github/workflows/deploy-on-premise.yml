@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main # Changing the branch here would also work
+    paths-ignore:
+      - 'readme.md'
+      - '.gitignore'
 env:
   WORKDIR: /home/${{ secrets.SSH_USERNAME }}/muslimbot
   env: production
@@ -19,8 +22,6 @@ jobs:
         run:
           shell: bash
     environment: on-premise
-    outputs:
-        package-version: ${{ steps.package-version.outputs.version }}
     steps:
         - uses: actions/checkout@v4
         
@@ -91,28 +92,29 @@ jobs:
               rm .env
               echo "Done"
 
-        - name: Extract Package Version
-          id: package-version
-          run: echo "::set-output name=version::$(jq -r '.version' package.json)"
-          
-        - name: Generate Git Tag
-          id: generate_tag
-          run: |
-            VERSION_PREFIX="v"
-            VERSION_MAJOR_MINOR="1.0"
-            VERSION_PATCH=$(git tag --list "${VERSION_PREFIX}${VERSION_MAJOR_MINOR}.*" --sort=-version:refname | head -n 1 | grep -oE '[0-9]+$')
-            if [ -z "$VERSION_PATCH" ]; then
-              VERSION_PATCH=0
-            else
-              VERSION_PATCH=$((VERSION_PATCH + 1))
-            fi
-            NEW_TAG="${VERSION_PREFIX}${VERSION_MAJOR_MINOR}.${VERSION_PATCH}"
-            echo "Generated new tag: $NEW_TAG"
-            echo "NEW_TAG=$NEW_TAG" >> $GITHUB_ENV
-        
-        - name: Push Git Tag
-          run: |
-            git config user.name "GitHub Actions"
-            git config user.email "github-actions@users.noreply.github.com"
-            git tag $NEW_TAG
-            git push origin $NEW_TAG
+        # Create a new tag and release
+        - run: echo "previous_tag=$(git describe --tags --abbrev=0 2>/dev/null || echo '')" >> $GITHUB_ENV
+        - name: Create Tag
+          id: create_tag
+          uses: jaywcjlove/create-tag-action@main
+          if: env.previous_tag
+          with:
+            package-path: ./package.json
+
+        - name: Generate Changelog
+          id: changelog
+          uses: jaywcjlove/changelog-generator@main
+          if: steps.create_tag.outputs.successful
+          with:
+            head-ref: ${{steps.create_tag.outputs.version}}
+
+        - name: Create Release
+          uses: ncipollo/release-action@v1
+          if: steps.create_tag.outputs.successful
+          with:
+            token: ${{ secrets.GITHUB_TOKEN }}
+            name: ${{ steps.create_tag.outputs.version }}
+            tag: ${{ steps.create_tag.outputs.version }}
+            body: |
+              ${{ steps.changelog.outputs.compareurl }}
+              ${{ steps.changelog.outputs.changelog }}

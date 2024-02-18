@@ -6,7 +6,7 @@ const logger = require('../utils/logger.js')
 const { Op } = require('sequelize')
 const { retrievePrayersOfTheDay } = require('../utils/retrieve_prayers.js')
 // Store job scheduled for each user
-const jobScheduled = {}
+const jobsScheduled = {}
 
 const schedulePrayerNotifications = async (client, subscription, prayer, prayerDateTime) => {
     const userid = subscription.User.userId
@@ -20,7 +20,7 @@ const schedulePrayerNotifications = async (client, subscription, prayer, prayerD
     currentDate.setHours(0, 0, 0, 0);
 
     // Check if the notification is already scheduled
-    if (jobScheduled[userid] && jobScheduled[userid].includes(prayer)) {
+    if (jobsScheduled[userid] && jobsScheduled[userid].includes(prayer)) {
         return
     }
 
@@ -34,9 +34,13 @@ const schedulePrayerNotifications = async (client, subscription, prayer, prayerD
                 .setTimestamp()
                 .setFooter({ text: 'MuslimBot 🕋 - For any help type /help command' });
 
-            user.send({ embeds: [embed] }).catch(error => {
-                logger.error(`Error during send notification for user ${userid}`, error)
-            })
+            user.send({ embeds: [embed] })
+                .catch(error => {
+                    logger.error(`Error during send notification for user ${userid}`, error)
+                    subscription.subscriptionEnabled = false // Disable subscription, user not reachable, he has probably blocked the bot or his DM are closed
+                    subscription.save()
+                    return
+                })
 
             // Update notification to sent
             NotificationsCtor.findOne({ where: { prayer: p, UserId: subscription.UserId, SubscriptionId: subscription.id, createdAt: { [Op.gt]: currentDate } } })
@@ -45,20 +49,18 @@ const schedulePrayerNotifications = async (client, subscription, prayer, prayerD
                         notification.sent = true
                         notification.save()
                         logger.info(`Notification ${notification.id} sent for user ${userid}`)
-                        jobScheduled[userid].splice(jobScheduled[userid].indexOf(p), 1) // Remove prayer from scheduled job
+                        jobsScheduled[userid].splice(jobsScheduled[userid].indexOf(p), 1) // Remove prayer from scheduled job
                     } else {
                         logger.warn(`Notification not found for user ${userid}`)
                     }
                 }).catch(() => {
                     logger.error(`Error during update notification for user ${userid}`)
-                    subscription.subscriptionEnabled = false // Disable subscription, user not reachable, he has probably blocked the bot or something like that
-                    subscription.save()
                 })
         })
     }.bind(null, prayer));
 
-    if (!jobScheduled[userid]) jobScheduled[userid] = []
-    jobScheduled[userid].push(prayer)
+    if (!jobsScheduled[userid]) jobsScheduled[userid] = []
+    jobsScheduled[userid].push(prayer)
 
 
     // Create notification if not exists
@@ -105,7 +107,7 @@ const schedulePrayersForTheDay = (client) => {
                     logger.error(`Error during retrieve prayers for user ${subscription.User.userId}`, error)
                 })
                 .finally(() => {
-                    logger.debug(`Job scheduled for user ${subscription.User.userId} :`, jobScheduled[subscription.User.userId])
+                    logger.debug(`Job scheduled for user ${subscription.User.userId} :`, jobsScheduled[subscription.User.userId])
                 })
         });
     })
@@ -117,13 +119,20 @@ const schedulePrayerNewSubscription = async (client, subscription) => {
     logger.info(`New subscription for user ${subscriptionWithUser.User.userId}`)
     if (!subscriptionWithUser) throw new Error(`Subscription ${subscription.id} not found`)
 
-    const prayers = await retrievePrayersOfTheDay(subscriptionWithUser.city, subscriptionWithUser.country, true)
-    Object.keys(prayers).forEach(prayer => {
-        if (Object.keys(prayersMessages).includes(prayer)) {
-            const prayerDateTime = new Date(prayers[prayer])
-            schedulePrayerNotifications(client, subscriptionWithUser, prayer, prayerDateTime)
-        }
-    })
+    try {
+        const prayers = await retrievePrayersOfTheDay(subscriptionWithUser.city, subscriptionWithUser.country, true)
+
+        Object.keys(prayers).forEach(prayer => {
+            if (Object.keys(prayersMessages).includes(prayer)) {
+                const prayerDateTime = new Date(prayers[prayer])
+                schedulePrayerNotifications(client, subscriptionWithUser, prayer, prayerDateTime)
+                logger.debug(`Job scheduled for new user ${subscriptionWithUser.User.userId} :`, jobsScheduled[subscriptionWithUser.User.userId])
+            }
+        })
+    } catch (error) {
+        logger.error(`Error during retrieve prayers for new user ${subscriptionWithUser.User.userId}`, error)
+    }
+
 }
 
 const prayersMessages = {
