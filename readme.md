@@ -1,6 +1,9 @@
 # Muslim Discord Bot
 
 
+![Discord Bots](https://top.gg/api/widget/servers/1183399354166415481.svg)
+
+
 ### Welcome to the Muslim Discord Bot! 
 This bot is designed to assist the Muslim community by providing accurate prayer times based on their locations and allowing users to subscribe to automated prayer time notifications.
 Also, users can listen to the Quran *(Mishary Rashid Alafasy)* live from the bot.

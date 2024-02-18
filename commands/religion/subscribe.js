@@ -1,6 +1,9 @@
 const { ButtonBuilder, ButtonStyle, EmbedBuilder, ActionRowBuilder } = require('discord.js');
 const { Users, Subscriptions } = require('../../data/models.js');
 const logger = require('../../utils/logger.js')
+const { retrievePrayersOfTheDay } = require('../../utils/retrieve_prayers.js');
+const vars = require('../_general/vars.js');
+
 
 module.exports.help = {
     name: 'subscribe',
@@ -28,9 +31,15 @@ module.exports.run = async (_client, interaction) => {
     const city = queryCity.charAt(0).toUpperCase() + queryCity.slice(1).toLowerCase()
     const country = queryCountry.charAt(0).toUpperCase() + queryCountry.slice(1).toLowerCase()
 
-    if (!city || !country) return interaction.reply("You must specify a city and a country")
+    if (!city || !country) return interaction.reply("You must specify a city and a country", ephemeral = true)
 
-    if (interaction.user.bot) return interaction.reply("You can't subscribe to notifications with a bot account")
+    if (interaction.user.bot) return interaction.reply("You can't subscribe to notifications with a bot account", ephemeral = true)
+
+    // Check if location exists
+    const locationExists = await this.checkIfLocationExists(city, country)
+    if (!locationExists) {
+        return interaction.reply({ embeds: [new EmbedBuilder().setTitle('Location not found').setColor(vars.errorColor)], ephemeral: true })
+    }
 
     const confirm = new ButtonBuilder()
         .setCustomId('confirm')
@@ -93,5 +102,15 @@ module.exports.run = async (_client, interaction) => {
     } catch (e) {
         logger.error(e);
         await interaction.editReply({ content: 'Confirmation not received within 1 minute, cancelling', components: [] });
+    }
+}
+
+module.exports.checkIfLocationExists = async (city, country) => {
+    try {
+        const data = await retrievePrayersOfTheDay(city, country, false)
+        return data !== null
+    } catch (error) {
+        logger.error("Error during retrieve prayers", error)
+        return false
     }
 }
