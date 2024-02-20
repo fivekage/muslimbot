@@ -12,8 +12,9 @@ const NOT_CONFIGURED_CHANNEL = 'NOT_CONFIGURED_CHANNEL'
 const dailyCallScheduleHadiths = (client) => {
     if (process.env.NODE_ENV !== 'production' && process.env.NODE_ENV === 'development') {
         logger.info("Hadiths schedule in development mode")
-        rule.hour = new schedule.Range(0, 59); // Todo: change to 0
-        rule.minute = new schedule.Range(0, 59); // Todo: change to 0
+
+        rule.hour = process.env.HADITH_SCHEDULE_HOUR ?? 10
+        rule.minute = process.env.HADITH_SCHEDULE_MINUTE ?? 0;
     }
     else {
         rule.hour = process.env.HADITH_SCHEDULE_HOUR ?? 10
@@ -101,8 +102,7 @@ const dailyCallScheduleHadiths = (client) => {
                             text:
                                 !guild.channelAnnouncementId ? 'You can configure a channel to receive theses hadith with /hadith command' :
                                     'MuslimBot 🕋 - For any help type /help command'
-                        })
-                        .setTimestamp();
+                        });
 
                     channel.send({ embeds: [replyEmbed] }).catch(error => {
                         logger.error(`Error during send hadith for guild ${guild.guildId}`, error)

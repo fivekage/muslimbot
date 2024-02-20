@@ -48,7 +48,6 @@ module.exports.run = async (_client, interaction) => {
             .setTitle("This guild is not registered")
             .setDescription("Try to kick and reinvite the bot to your server, if it didn't work, please contact me <@317033647045607424>")
             .setColor(vars.primaryColor)
-            .setTimestamp()
             .setFooter({ text: 'MuslimBot 🕋 - For any help type /help command' });
         return interaction.reply({ embeds: [embed] })
     }
@@ -65,7 +64,6 @@ module.exports.run = async (_client, interaction) => {
             `Hadiths are now enabled, you will receive a hadith in your server everyday` :
             "Hadiths are now disabled")
         .setColor(vars.primaryColor)
-        .setTimestamp()
         .setFooter({ text: 'MuslimBot 🕋 - For any help type /help command' });
 
     interaction.reply({ embeds: [embed] })

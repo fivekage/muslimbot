@@ -107,10 +107,10 @@ module.exports.run = async (_client, interaction) => {
 
 module.exports.checkIfLocationExists = async (city, country) => {
     try {
-        const data = await retrievePrayersOfTheDay(city, country, false)
+        const data = await retrievePrayersOfTheDay(city, country, 1, false)
         return data !== null
     } catch (error) {
-        logger.error("Error during retrieve prayers", error)
+        logger.error("Error during check location", error)
         return false
     }
 }
