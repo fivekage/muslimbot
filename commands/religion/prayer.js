@@ -22,6 +22,18 @@ module.exports.help = {
     ],
 }
 
+module.exports.getTimesFromIsoDatetime = (date) => {
+    hours = new Date(date).getHours()
+    minutes = new Date(date).getMinutes()
+    if (hours < 10) {
+        hours = "0" + hours
+    }
+    if (minutes < 10) {
+        minutes = "0" + minutes
+    }
+    return hours + ":" + minutes
+}
+
 module.exports.run = (_client, interaction) => {
 
     const queryCountry = interaction.options.getString('country')
@@ -31,23 +43,23 @@ module.exports.run = (_client, interaction) => {
 
     if (!city || !country) return interaction.reply({ content: "You must specify a city and a country", ephemeral: true })
 
-    retrievePrayersOfTheDay(city, country, false)
+    retrievePrayersOfTheDay(city, country, 1, true)
         .then(data => {
             const embed = new EmbedBuilder()
-                .setTitle(`Prayer in ${city}, ${country}`)
+                .setTitle(`Prayer times for ${city}, ${country}`)
                 .setColor(vars.primaryColor)
                 .setAuthor({ name: `For you ${interaction.user.username}` })
-                .setThumbnail("https://cdn-icons-png.flaticon.com/512/2714/2714091.png")
+                .setThumbnail("https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExc2syc3F3ODZpaW50MnQ1ZzVwYWdhbXl6em5zcHMzOTVqMmhseGhhNSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/12ihpr4WmwKJsQ/giphy.gif")
                 .addFields(
-                    { name: ':clock1: **Imsak**', value: ` ${data['Imsak']}`, inline: true },
-                    { name: ':clock2: **Fajr**', value: `${data['Fajr']}`, inline: true },
-                    { name: ':clock3: **Dhuhr**', value: `${data['Dhuhr']}`, inline: true },
-                    { name: ':clock4: **Asr**', value: `${data['Asr']}`, inline: true },
-                    { name: ':clock5: **Maghrib**', value: `${data['Maghrib']}`, inline: true },
-                    { name: ':clock6: **Isha**', value: `${data['Isha']}`, inline: true },
+                    { name: ':clock1: **Imsak**', value: ` ${this.getTimesFromIsoDatetime(data['Imsak'])}`, inline: true },
+                    { name: ':clock2: **Fajr**', value: `${this.getTimesFromIsoDatetime(data['Fajr'])}`, inline: true },
+                    { name: ':clock3: **Dhuhr**', value: `${this.getTimesFromIsoDatetime(data['Dhuhr'])}`, inline: true },
+                    { name: ':clock4: **Asr**', value: `${this.getTimesFromIsoDatetime(data['Asr'])}`, inline: true },
+                    { name: ':clock5: **Maghrib**', value: `${this.getTimesFromIsoDatetime(data['Maghrib'])}`, inline: true },
+                    { name: ':clock6: **Isha**', value: `${this.getTimesFromIsoDatetime(data['Isha'])}`, inline: true },
                 )
-                .setFooter({ text: 'MuslimBot 🕋 - For any help type /help command' })
-                .setTimestamp()
+                .setURL(vars.topggUrl)
+                .setFooter({ text: `MuslimBot 🕋 - For any help type /help command` })
             return interaction.reply({ embeds: [embed] })
         })
         .catch(error => {

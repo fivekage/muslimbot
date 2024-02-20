@@ -115,7 +115,7 @@ module.exports.run = async (client, interaction) => {
     }
     logger.info("Quizz finished for ", interaction?.guild?.id ? `guild ${interaction.guild.name}` : `user ${interaction.user.username}`)
     const embed = new EmbedBuilder()
-        .setTitle(`Quizz finished for ${interaction.user.username}`)
+        .setAuthor(`Quizz finished for ${interaction.user.username}`)
         .setDescription(`You have reached the end of the quizz, you have **${responses.filter(r => r.valid).length}** good answers.`)
         .setColor(vars.primaryColor)
         .setFooter({ text: 'MuslimBot 🕋 - For any help type /help command' })

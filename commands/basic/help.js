@@ -18,7 +18,7 @@ module.exports.run = (_client, interaction) => {
 		.setColor(vars.primaryColor)
 		.setDescription(listOfCommands)
 		.setAuthor({ name: interaction.user.username })
-		.setTimestamp()
+		.setTitle('List of available commands')
 		.setFooter({ text: 'Need help? Contact samouik', iconURL: vars.reecoom })
 
 	interaction.reply({ embeds: [helpEmbed] })

@@ -4,15 +4,15 @@ const { connectToChannel } = require('../../utils/play_quran.js')
 
 module.exports.help = {
     name: 'quran',
-    description: "Play a random verse from the Quran",
+    description: "Play radio quran in your voice channel",
 }
 
 module.exports.run = async (client, interaction) => {
 
-    const channel = interaction.member.voice.channel;
     if (!interaction.inGuild())
         interaction.reply({ content: 'You have to send this command from a guild, not in private', ephemeral: true })
 
+    const channel = interaction.member.voice.channel;
     if (!channel) {
         interaction.reply({ content: 'You need to join a voice channel first!', ephemeral: true })
         return;
@@ -34,7 +34,6 @@ module.exports.run = async (client, interaction) => {
         .addFields(
             { name: ':musical_note: **Playing**', value: `**${client.player.currentResource.toUpperCase()}**` },
         )
-        .setTimestamp()
         .setFooter({ text: `Requested by ${interaction.user.username}` })
     await interaction.reply({ embeds: [playEmbed] })
 }
