@@ -25,7 +25,10 @@ module.exports.retrievePrayersOfTheDay = async (city, country, retries, iso8601 
                 return json.data;
             })
             .then(async response => {
-                resolve(response.timings)
+                resolve({
+                    ...response.timings,
+                    ...response.meta
+                })
             })
             .catch(error => {
                 reject(error)
