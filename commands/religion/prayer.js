@@ -24,6 +24,7 @@ module.exports.help = {
 
 module.exports.getTimesFromIsoDatetime = (date, timezone) => {
     date_object = new Date(date)
+
     date_timezone = date_object.toLocaleString('en-US', {
         timeZone: timezone,
     })
@@ -47,12 +48,12 @@ module.exports.run = (_client, interaction) => {
                 .setAuthor({ name: `For you ${interaction.user.username}` })
                 .setThumbnail("https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExc2syc3F3ODZpaW50MnQ1ZzVwYWdhbXl6em5zcHMzOTVqMmhseGhhNSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/12ihpr4WmwKJsQ/giphy.gif")
                 .addFields(
-                    { name: ':clock1: **Imsak**', value: ` ${this.getTimesFromIsoDatetime(data['Imsak'], data['timezeone'])}`, inline: true },
-                    { name: ':clock2: **Fajr**', value: `${this.getTimesFromIsoDatetime(data['Fajr'], data['timezeone'])}`, inline: true },
-                    { name: ':clock3: **Dhuhr**', value: `${this.getTimesFromIsoDatetime(data['Dhuhr'], data['timezeone'])}`, inline: true },
-                    { name: ':clock4: **Asr**', value: `${this.getTimesFromIsoDatetime(data['Asr'], data['timezeone'])}`, inline: true },
-                    { name: ':clock5: **Maghrib**', value: `${this.getTimesFromIsoDatetime(data['Maghrib'], data['timezeone'])}`, inline: true },
-                    { name: ':clock6: **Isha**', value: `${this.getTimesFromIsoDatetime(data['Isha'], data['timezeone'])}`, inline: true },
+                    { name: ':clock1: **Imsak**', value: ` ${this.getTimesFromIsoDatetime(data['Imsak'], data['timezone'])}`, inline: true },
+                    { name: ':clock2: **Fajr**', value: `${this.getTimesFromIsoDatetime(data['Fajr'], data['timezone'])}`, inline: true },
+                    { name: ':clock3: **Dhuhr**', value: `${this.getTimesFromIsoDatetime(data['Dhuhr'], data['timezone'])}`, inline: true },
+                    { name: ':clock4: **Asr**', value: `${this.getTimesFromIsoDatetime(data['Asr'], data['timezone'])}`, inline: true },
+                    { name: ':clock5: **Maghrib**', value: `${this.getTimesFromIsoDatetime(data['Maghrib'], data['timezone'])}`, inline: true },
+                    { name: ':clock6: **Isha**', value: `${this.getTimesFromIsoDatetime(data['Isha'], data['timezone'])}`, inline: true },
                 )
                 .setURL(vars.topggUrl)
                 .setFooter({ text: `MuslimBot 🕋 - For any help type /help command` })

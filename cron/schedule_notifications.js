@@ -83,7 +83,7 @@ const schedulePrayerNotifications = async (client, subscription, prayer, prayerD
 }
 
 const dailyCallSchedulePrayers = (client) => {
-    const ruleCron = process.env.PRAYER_SCHEDULE_CRON ?? '0 */2 * * *' // Every 2 hours;
+    const ruleCron = process.env.PRAYER_SCHEDULE_CRON ?? '0 * * * *' // Every hour;
     const job = schedule.scheduleJob(ruleCron, function () {
         schedulePrayersForTheDay(client)
     });
