@@ -1,162 +1,162 @@
-const {Sequelize, DataTypes} = require('sequelize');
+const { Sequelize, DataTypes } = require('sequelize');
 require('dotenv').config();
 const logger = require('../utils/logger.js');
 
 const sequelizeInstance = () => {
-  const {DB_HOST} = process.env;
-  const DB_DATABASE = process.env.DB_DATABASE ?? 'muslimbot';
-  const {DB_USERNAME} = process.env;
-  const {DB_PASSWORD} = process.env;
+   const { DB_HOST } = process.env;
+   const DB_DATABASE = process.env.DB_DATABASE ?? 'muslimbot';
+   const { DB_USERNAME } = process.env;
+   const { DB_PASSWORD } = process.env;
 
-  if (!DB_HOST || !DB_USERNAME || !DB_PASSWORD) {
-    logger.fatal('Please provide a valid db host, username and password');
-    process.exit(1);
-  }
+   if (!DB_HOST || !DB_USERNAME || !DB_PASSWORD) {
+      logger.fatal('Please provide a valid db host, username and password');
+      process.exit(1);
+   }
 
-  logger.info('Database Used :', DB_DATABASE);
+   logger.info('Database Used :', DB_DATABASE);
 
-  const connectionStr = `mariadb://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}/${DB_DATABASE}`;
-  return new Sequelize(connectionStr, {
-    host: DB_HOST,
-    database: DB_DATABASE,
-    username: DB_USERNAME,
-    password: DB_PASSWORD,
-    dialect: 'mariadb',
-    dialectModule: require('mariadb'),
-    benchmark: true, // <-- this one enables tracking execution time
-    logging: (sql, timingMs) => {
-      timingMs > 5 ?? logger.debug(`${sql} - [Execution time: ${timingMs}ms]`);
-    }, // Log only if query time is greater than 10ms
-  });
+   const connectionStr = `mariadb://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}/${DB_DATABASE}`;
+   return new Sequelize(connectionStr, {
+      host: DB_HOST,
+      database: DB_DATABASE,
+      username: DB_USERNAME,
+      password: DB_PASSWORD,
+      dialect: 'mariadb',
+      dialectModule: require('mariadb'),
+      benchmark: true, // <-- this one enables tracking execution time
+      logging: (sql, timingMs) => {
+         timingMs > 5 ?? logger.debug(`${sql} - [Execution time: ${timingMs}ms]`);
+      }, // Log only if query time is greater than 10ms
+   });
 };
 
 const sequelize = sequelizeInstance();
 module.exports.init = async (client) => {
-  try {
-    await sequelize.authenticate();
-    logger.info('Connection has been established successfully.');
-  } catch (error) {
-    logger.fatal('Unable to connect to the database:', error);
-    throw error;
-  }
+   try {
+      await sequelize.authenticate();
+      logger.info('Connection has been established successfully.');
+   } catch (error) {
+      logger.fatal('Unable to connect to the database:', error);
+      throw error;
+   }
 
-  const Users = sequelize.define('Users', {
-    id: {
-      type: DataTypes.INTEGER,
-      autoIncrement: true,
-      primaryKey: true,
-    },
-    userId: {
-      type: DataTypes.STRING,
-      unique: true,
-    },
-    guildId: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-  });
-
-  const Subscriptions = sequelize.define('Subscriptions', {
-    id: {
-      type: DataTypes.INTEGER,
-      autoIncrement: true,
-      primaryKey: true,
-    },
-    city: DataTypes.STRING,
-    country: DataTypes.STRING,
-    subscriptionEnabled: DataTypes.BOOLEAN,
-  }, {
-    hooks: {
-      afterCreate: async (subscription, options) => {
-        const {schedulePrayerNewSubscription} = require('../cron/schedule_notifications.js');
-        schedulePrayerNewSubscription(client, subscription);
+   const usersModel = sequelize.define('Users', {
+      id: {
+         type: DataTypes.INTEGER,
+         autoIncrement: true,
+         primaryKey: true,
       },
-    },
-  });
+      userId: {
+         type: DataTypes.STRING,
+         unique: true,
+      },
+      guildId: {
+         type: DataTypes.STRING,
+         allowNull: true,
+      },
+   });
 
-  const Notifications = sequelize.define('Notifications', {
-    id: {
-      type: DataTypes.INTEGER,
-      autoIncrement: true,
-      primaryKey: true,
-    },
-    prayer: DataTypes.STRING,
-    sent: DataTypes.BOOLEAN,
-  });
+   const subscriptionsModel = sequelize.define('Subscriptions', {
+      id: {
+         type: DataTypes.INTEGER,
+         autoIncrement: true,
+         primaryKey: true,
+      },
+      city: DataTypes.STRING,
+      country: DataTypes.STRING,
+      subscriptionEnabled: DataTypes.BOOLEAN,
+   }, {
+      hooks: {
+         afterCreate: async (subscription, _options) => {
+            const { schedulePrayerNewSubscription } = require('../cron/schedule_notifications.js');
+            schedulePrayerNewSubscription(client, subscription);
+         },
+      },
+   });
 
-  const Guilds = sequelize.define('Guilds', {
-    id: {
-      type: DataTypes.INTEGER,
-      autoIncrement: true,
-      primaryKey: true,
-    },
-    guildId: DataTypes.STRING,
-    guildName: DataTypes.STRING,
-    isStillInGuild: DataTypes.BOOLEAN,
-    channelAnnouncementId: DataTypes.STRING,
-    dailyHadithEnabled: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: true,
-    },
-  });
+   const notificationsModel = sequelize.define('Notifications', {
+      id: {
+         type: DataTypes.INTEGER,
+         autoIncrement: true,
+         primaryKey: true,
+      },
+      prayer: DataTypes.STRING,
+      sent: DataTypes.BOOLEAN,
+   });
 
-  const QuizzQuestions = sequelize.define('QuizzQuestions', {
-    id: {
-      type: DataTypes.INTEGER,
-      autoIncrement: true,
-      primaryKey: true,
-    },
-    question: DataTypes.STRING,
-    enabled: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: true,
-    },
-  });
+   const guildsModel = sequelize.define('Guilds', {
+      id: {
+         type: DataTypes.INTEGER,
+         autoIncrement: true,
+         primaryKey: true,
+      },
+      guildId: DataTypes.STRING,
+      guildName: DataTypes.STRING,
+      isStillInGuild: DataTypes.BOOLEAN,
+      channelAnnouncementId: DataTypes.STRING,
+      dailyHadithEnabled: {
+         type: DataTypes.BOOLEAN,
+         defaultValue: true,
+      },
+   });
 
-  const QuizzAnswers = sequelize.define('QuizzAnswers', {
-    id: {
-      type: DataTypes.INTEGER,
-      autoIncrement: true,
-      primaryKey: true,
-    },
-    valid: DataTypes.BOOLEAN,
-    answer: DataTypes.STRING,
-    enabled: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: true,
-    },
-  });
+   const quizzQuestionsModel = sequelize.define('QuizzQuestions', {
+      id: {
+         type: DataTypes.INTEGER,
+         autoIncrement: true,
+         primaryKey: true,
+      },
+      question: DataTypes.STRING,
+      enabled: {
+         type: DataTypes.BOOLEAN,
+         defaultValue: true,
+      },
+   });
 
-  Users.hasOne(Subscriptions);
-  Subscriptions.belongsTo(Users);
+   const quizzAnswersModel = sequelize.define('QuizzAnswers', {
+      id: {
+         type: DataTypes.INTEGER,
+         autoIncrement: true,
+         primaryKey: true,
+      },
+      valid: DataTypes.BOOLEAN,
+      answer: DataTypes.STRING,
+      enabled: {
+         type: DataTypes.BOOLEAN,
+         defaultValue: true,
+      },
+   });
 
-  Users.hasMany(Notifications);
-  Notifications.belongsTo(Users);
-  Subscriptions.hasMany(Notifications);
-  Notifications.belongsTo(Subscriptions);
-  QuizzQuestions.hasMany(QuizzAnswers);
-  QuizzAnswers.belongsTo(QuizzQuestions);
+   usersModel.hasOne(subscriptionsModel);
+   subscriptionsModel.belongsTo(usersModel);
 
-  if (process.env.NODE_ENV != 'production') {
-    await sequelize.sync({match: /.*_dev$/});
-  }
+   usersModel.hasMany(notificationsModel);
+   notificationsModel.belongsTo(usersModel);
+   subscriptionsModel.hasMany(notificationsModel);
+   notificationsModel.belongsTo(subscriptionsModel);
+   quizzQuestionsModel.hasMany(quizzAnswersModel);
+   quizzAnswersModel.belongsTo(quizzQuestionsModel);
 
-  await Users.sync();
-  await Subscriptions.sync();
-  await Notifications.sync();
-  await Guilds.sync();
-  await QuizzQuestions.sync();
-  await QuizzAnswers.sync();
+   if (process.env.NODE_ENV != 'production') {
+      await sequelize.sync({ match: /.*_dev$/ });
+   }
+
+   await usersModel.sync();
+   await subscriptionsModel.sync();
+   await notificationsModel.sync();
+   await guildsModel.sync();
+   await quizzQuestionsModel.sync();
+   await quizzAnswersModel.sync();
 };
 
-module.exports.Users = () => sequelize.models.Users;
+module.exports.usersModel = () => sequelize.models.Users;
 
-module.exports.Subscriptions = () => sequelize.models.Subscriptions;
+module.exports.subscriptionsModel = () => sequelize.models.Subscriptions;
 
-module.exports.Notifications = () => sequelize.models.Notifications;
+module.exports.notificationsModel = () => sequelize.models.Notifications;
 
-module.exports.Guilds = () => sequelize.models.Guilds;
+module.exports.guildsModel = () => sequelize.models.Guilds;
 
-module.exports.QuizzQuestions = () => sequelize.models.QuizzQuestions;
+module.exports.quizzQuestionsModel = () => sequelize.models.QuizzQuestions;
 
-module.exports.QuizzAnswers = () => sequelize.models.QuizzAnswers;
+module.exports.quizzAnswersModel = () => sequelize.models.QuizzAnswers;

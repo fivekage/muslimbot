@@ -19,7 +19,7 @@ Also, users can listen to the Quran *(Mishary Rashid Alafasy)* live from the bot
 
 ## Getting Started
 
-### Adding the Bot to Your Discord Server
+### [Adding the Bot to Your Discord Server](https://top.gg/bot/1183399354166415481)
 
 To add the Muslim Bot Discord Bot to your server, simply click [here](https://top.gg/bot/1183399354166415481) and follow the instructions on the top.gg page.
 
@@ -31,8 +31,11 @@ To add the Muslim Bot Discord Bot to your server, simply click [here](https://to
 - 🔔 **Subscribe for prayers for your city:**
 `/subscribe <city> <country>`
 
-- 🔕**Unsubscribe from prayer notifications:**
-`/unsubscribe`
+- 📜 **Get List of your subscriptions:**
+`/subscriptions`
+
+- 🔕**Unsubscribe from prayer notifications for a city:**
+`/unsubscribe <city> <country>`
 
 - 📻 **Listen to the Quran Live Radio:**
 `/quran`
@@ -48,6 +51,6 @@ To add the Muslim Bot Discord Bot to your server, simply click [here](https://to
 This bot is hosted, and you can add it to your Discord server by following the link provided above.
 
 
-![img](https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRjOeUSpkq-u0omjFj91UyKj1AZZ2XpmCSENg&usqp=CAU)
+![img](https://media.istockphoto.com/id/157191730/photo/mosque-with-crescent-moon-at-dusk.jpg?s=612x612&w=0&k=20&c=jyWjRjylTcO8cO1cDVVfo-Y8sFuyroBKzIq8r2YKce0=)
 
 *Developed by Samy Mokhtari*

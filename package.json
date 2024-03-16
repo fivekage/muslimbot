@@ -1,6 +1,6 @@
 {
   "name": "muslimbot",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Discord Bot to help muslim community",
   "main": "index.js",
   "scripts": {
@@ -11,21 +11,24 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/fivekage/islambot.git"
+    "url": "git+https://github.com/fivekage/muslimbot"
   },
   "keywords": [
     "node",
     "discord",
+    "bot",
     "islam",
     "muslim",
+    "religion",
+    "muslimbot",
     "prayer"
   ],
   "author": "Samy Mokhtari",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/fivekage/islambot/issues"
+    "url": "https://github.com/fivekage/muslimbot/issues"
   },
-  "homepage": "https://github.com/fivekage/islambot#readme",
+  "homepage": "https://github.com/fivekage/muslimbott#readme",
   "dependencies": {
     "@discordjs/voice": "^0.16.1",
     "discord.js": "^14.14.1",
