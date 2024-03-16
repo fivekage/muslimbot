@@ -1,29 +1,34 @@
 {
   "name": "muslimbot",
-  "version": "1.1.3",
+  "version": "1.2.1",
   "description": "Discord Bot to help muslim community",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon index.js"
+    "start": "nodemon index.js",
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix --ext .js,.jsx ."
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/fivekage/islambot.git"
+    "url": "git+https://github.com/fivekage/muslimbot"
   },
   "keywords": [
     "node",
     "discord",
+    "bot",
     "islam",
     "muslim",
+    "religion",
+    "muslimbot",
     "prayer"
   ],
   "author": "Samy Mokhtari",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/fivekage/islambot/issues"
+    "url": "https://github.com/fivekage/muslimbot/issues"
   },
-  "homepage": "https://github.com/fivekage/islambot#readme",
+  "homepage": "https://github.com/fivekage/muslimbott#readme",
   "dependencies": {
     "@discordjs/voice": "^0.16.1",
     "discord.js": "^14.14.1",
@@ -35,8 +40,14 @@
     "mariadb": "^3.2.3",
     "mediaplex": "^0.0.9",
     "node-schedule": "^2.1.1",
-    "nodemon": "^3.0.3",
+    "nodemon": "^3.1.0",
     "opusscript": "^0.0.8",
     "sequelize": "^6.37.1"
+  },
+  "devDependencies": {
+    "eslint": "^8.57.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-config-google": "^0.14.0",
+    "eslint-plugin-import": "^2.29.1"
   }
 }
