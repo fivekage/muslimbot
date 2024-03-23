@@ -164,7 +164,7 @@ const notifyAdministratorFromMissingChannel = async (guildsTable, guildEntity, g
          ])
          .setAuthor({ name: 'MuslimBot' })
          .setColor(vars.primaryColor)
-         .setFooter({ text: 'MuslimBot 🕋 - For any help type /help command' });
+         .setFooter({ text: `${require('../package.json').version} - MuslimBot 🕋 - For any help type /help command` });
       admin.send({ embeds: [embed] });
       guildsTable.update({ channelAnnouncementId: NOT_CONFIGURED_CHANNEL }, { where: { guildId: guildEntity.guildId } });
    }

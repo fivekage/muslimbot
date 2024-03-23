@@ -21,6 +21,9 @@ module.exports.handleNewGuild = async (client) => {
             {
                id: guild.id,
                allow: [PermissionsBitField.Flags.ViewChannel],
+               allow: [PermissionsBitField.Flags.AddReactions],
+               allow: [PermissionsBitField.Flags.SendMessages],
+               allow: [PermissionsBitField.Flags.EmbedLinks],
             },
          ],
       });
@@ -68,7 +71,7 @@ module.exports.handleNewGuild = async (client) => {
                value: 'If you have any questions or suggestions, please send me a message <@317033647045607424>)',
             },
          ])
-         .setFooter({ text: 'MuslimBot 🕋 - For any help type /help command' });
+         .setFooter({ text: `${require('../package.json').version} - MuslimBot 🕋 - For any help type /help command` });
 
       const hadithEmbed = new EmbedBuilder()
          .setTitle('Hadith of the day')
@@ -83,7 +86,7 @@ module.exports.handleNewGuild = async (client) => {
             },
 
          ])
-         .setFooter({ text: 'MuslimBot 🕋 - For any help type /help command' });
+         .setFooter({ text: `${require('../package.json').version} - MuslimBot 🕋 - For any help type /help command` });
 
       channelHadiths.send({ embeds: [hadithEmbed] });
       channelWelcome.send({ embeds: [welcomeEmbed] });

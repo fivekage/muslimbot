@@ -25,7 +25,7 @@ module.exports.run = async (_client, interaction) => {
          .setAuthor({ name: `For you ${interaction.user.username}` })
          .setThumbnail('https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExc2syc3F3ODZpaW50MnQ1ZzVwYWdhbXl6em5zcHMzOTVqMmhseGhhNSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/12ihpr4WmwKJsQ/giphy.gif')
          .setDescription('You can subscribe to a city by using the `/subscribe` command')
-         .setFooter({ text: 'MuslimBot 🕋 - For any help type /help command' });
+         .setFooter({ text: `${require('../../package.json').version} - MuslimBot 🕋 - For any help type /help command` });
 
       return interaction.reply({ embeds: [embed] });
    }

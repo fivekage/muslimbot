@@ -9,6 +9,7 @@ const models = require('./data/models.js');
 const { dailyCallSchedulePrayers, schedulePrayersForTheDay } = require('./cron/schedule_notifications.js');
 const { dailyCallScheduleHadiths } = require('./cron/schedule_hadiths.js');
 const { playQuran } = require('./utils/play_quran.js');
+const { synchronizeVersion } = require('./utils/sync_version.js');
 require('dotenv').config();
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, 'GuildVoiceStates', GatewayIntentBits.GuildMessageReactions] });
@@ -33,6 +34,7 @@ initializationClient(client, rest, DISCORD_TOKEN, CLIENT_ID, commands).catch(con
       dailyCallSchedulePrayers(client);
       schedulePrayersForTheDay(client);
       dailyCallScheduleHadiths(client);
+      synchronizeVersion(client);
    })(client);
 
    // Play Quran Radio

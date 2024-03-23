@@ -93,7 +93,7 @@ module.exports.run = async (client, interaction) => {
             { name: 'What to do?', value: 'Try to kick and reinvite the bot to your server, if it didn\'t work, please contact me <@317033647045607424>' },
          ])
          .setColor(vars.errorColor)
-         .setFooter({ text: 'MuslimBot 🕋 - For any help type /help command' });
+         .setFooter({ text: `${require('../../package.json').version} - MuslimBot 🕋 - For any help type /help command` });
       return interaction.reply({ embeds: [embed] });
    }
 
@@ -110,7 +110,7 @@ module.exports.run = async (client, interaction) => {
          'Hadiths are now enabled, you will receive a hadith in your server everyday' :
          'Hadiths are now disabled')
       .setColor(vars.primaryColor)
-      .setFooter({ text: 'MuslimBot 🕋 - For any help type /help command' });
+      .setFooter({ text: `${require('../../package.json').version} - MuslimBot 🕋 - For any help type /help command` });
 
    interaction.reply({ embeds: [embed] });
 };

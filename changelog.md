@@ -1,3 +1,23 @@
+## [x.y.z] - 2024-03-15
+
+### Added
+
+- example of new feature
+- fix of a bug
+
+### Changed
+
+- case of a change in a feature
+- refactor of some code
+
+### Removed
+
+- feature that is no longer supported
+- unused code
+
+
+---
+
 ## [1.2.0] - 2024-03-15
 
 ### Added
@@ -13,9 +33,6 @@
 - `/subscribe` command : Improve command, add checks to avoid duplicate subscriptions.
 - `/prayer` : Replaced the Imsak time by the Sunrise time in the prayer message.
 
-### Removed
-
-- /
 
 ---
 
@@ -30,8 +47,14 @@
 
 - `/hadith` command : Make second arg optionnal, create guild if not exists.
 
-### Removed
-
-- /
-
 ---
+
+## [1.2.2] - 2024-03-24
+
+### Added
+
+- enforce commit message.
+- enforce squash commits on MRs.
+- enable sast.
+- store automated version in db then inform users when a new release.
+- add `/release_notes` command to enable or disable release notes notifications.

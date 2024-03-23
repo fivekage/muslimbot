@@ -1,0 +1,73 @@
+name: Continuous Integration
+
+on:
+  pull_request:
+    types:
+      - opened
+      - edited
+      - reopened
+      - synchronize
+    branches:
+      - main
+
+env:
+  WORKDIR: /home/${{ secrets.SSH_USERNAME }}/muslimbot
+  env: production
+
+permissions:
+  contents: read
+  pull-requests: write
+  security-events: write
+
+jobs:
+  check_commits:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check branch name
+        run: |
+          echo "Source Branch : ${{github.event.pull_request.head.ref}}"
+          regex="(issue|ISSUE)-([a-z0-9]+)$"
+          if [[ ${{github.event.pull_request.head.ref}} =~ $regex ]]; then
+            echo "✅ Branch name is correct : ${{github.event.pull_request.head.ref}}"
+          else
+            echo "❌ The branch name does not respect the regex rule."
+            echo "It should look like: issue-123 or ISSUE-123"
+            exit 1
+          fi
+
+      - name: Check commits squashed
+        run: |
+          git fetch --all
+          echo "Source Branch : ${{github.event.pull_request.head.ref}}"
+          echo  "Target Branch : ${{github.event.pull_request.base.ref}}"
+          target_branch_commit_count=$(git rev-list --count origin/${{github.event.pull_request.base.ref}})
+          feature_commit_count=$(git rev-list --count origin/${{ github.event.pull_request.head.ref }})
+          if [ $((feature_commit_count - target_branch_commit_count)) -ne 1 ]; then echo "❌ The feature branch '${{github.event.pull_request.head.ref}}' does not have one more commit than the '${{github.event.pull_request.base.ref}}' branch. Squash your commits."; exit 1; fi
+          echo "✅ The feature branch '${{github.event.pull_request.head.ref}}' has exactly one more commit than the target branch."
+
+      - name: Check commit message
+        run: |
+          regex="^\[#([0-9]+)\]\s+(.*?)$"
+          git fetch --all
+          commit_msg=$(git log -n 1 origin/${{github.event.pull_request.head.ref}} --oneline --pretty=format:%s)
+          if [[ $commit_msg =~ $regex ]]; then
+            echo "✅ Commit Message is correct : ${commit_msg}"
+          else
+            echo "❌ The commit message does not respect the regex rule."
+            echo "It should look like: [#123] Commit message"
+            echo "Your commit message is: ${commit_msg}"
+            exit 1
+          fi
+
+  build_docker_image:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Build Docker image
+        run: |
+          docker build -t muslimbot .
+          
