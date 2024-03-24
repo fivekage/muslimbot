@@ -81,7 +81,7 @@ jobs:
               sudo docker run -d \
               --name muslimbot \
               --env-file .env \
-              --restart=always \
+              --restart=on-failure:3 \
               --mount type=bind,source=/var/log/muslimbot,target=/usr/src/bot/logs \
               --mount type=bind,source=/home/sm/quran,target=/usr/src/bot/quran \
               --restart=unless-stopped \

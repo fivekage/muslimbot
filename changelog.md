@@ -58,3 +58,12 @@
 - enable sast.
 - store automated version in db then inform users when a new release.
 - add `/release_notes` command to enable or disable release notes notifications.
+
+---
+
+## [1.2.3] - 2024-03-24
+
+### Added
+
+- Errors checks on users not reachable on release notes notifications.
+(Sorry brothers for the spam in previous release 😅, It will be okay now)
