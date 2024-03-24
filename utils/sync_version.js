@@ -27,32 +27,39 @@ module.exports = {
                // Send the changelog to all users who have subscribed to the changelog
                await usersModel().findAll({
                   where: { subscribedChangelog: true },
-               }).then(async (users) => {
-                  for (const user of users) {
-                     const member = await client.users.fetch(user.userId);
-                     if (member) {
-                        const embed = new EmbedBuilder()
-                           .setTitle('**New version has been Released !**')
-                           .setDescription(latestChangelog)
-                           .setAuthor({ name: 'MuslimBot' })
-                           .addFields([
-                              { name: 'Thank you 🙏', value: `Don't forget to support us on: [Top.gg](${vars.topggUrl})` },
-                              { name: 'Support', value: `If you have any questions or need help, please open an issue on [GitHub](${vars.githubUrl})` },
-                           ])
-                           .setColor(vars.primaryColor)
-                           .setFooter({ text: 'MuslimBot 🕋 - Type the command "/release_notes" to enable/disable notifications of patch notes' });
+               })
+                  .then(async (users) => {
+                     for (const user of users) {
+                        const member = await client.users.fetch(user.userId);
+                        if (member) {
+                           const embed = new EmbedBuilder()
+                              .setTitle('**New version has been Released !**')
+                              .setDescription(latestChangelog)
+                              .setAuthor({ name: 'MuslimBot' })
+                              .addFields([
+                                 { name: 'Thank you 🙏', value: `Don't forget to support us on: [Top.gg](${vars.topggUrl})` },
+                                 { name: 'Support', value: `If you have any questions or need help, please open an issue on [GitHub](${vars.githubUrl})` },
+                              ])
+                              .setColor(vars.primaryColor)
+                              .setFooter({ text: 'MuslimBot 🕋 - Type the command "/release_notes" to enable/disable notifications of patch notes' });
 
-                        member.send({
-                           embeds: [embed],
-                        });
+                           member.send({
+                              embeds: [embed],
+                           }).catch((error) => {
+                              logger.warn(`Error while sending changelog to ${member.username} - ${error}`);
+                           });
+                        }
                      }
-                  }
-
-                  logger.info(`Sent changelog to ${users.length} users`);
-               });
+                     logger.info(`Sent changelog to ${users.length} users`);
+                  })
+                  .catch((error) => {
+                     logger.error(`Error while fetching users: ${error}`);
+                  });
 
                // Save it to the database
-               version.save();
+               await version.save().catch((error) => {
+                  logger.error(`Error while saving version ${version.versionNumber} - ${error}`);
+               });
             }
             return [version, created];
          })
