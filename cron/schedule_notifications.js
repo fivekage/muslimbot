@@ -31,7 +31,7 @@ const schedulePrayerNotifications = async (client, subscription, prayer, prayerD
             .setDescription(getPrayerMessage(p, isRamadan))
             .setColor(vars.primaryColor)
             .setURL(vars.topggUrl)
-            .setFooter({ text: 'MuslimBot 🕋 - For any help type /help command' });
+            .setFooter({ text: `${require('../package.json').version} - MuslimBot 🕋 - For any help type /help command` });
 
 
          // Add Ramadan message

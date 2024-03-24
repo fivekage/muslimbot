@@ -54,6 +54,10 @@ module.exports.init = async (client) => {
          type: DataTypes.STRING,
          allowNull: true,
       },
+      subscribedChangelog: {
+         type: DataTypes.BOOLEAN,
+         defaultValue: true,
+      },
    });
 
    const subscriptionsModel = sequelize.define('Subscriptions', {
@@ -127,6 +131,21 @@ module.exports.init = async (client) => {
       },
    });
 
+   const versionsModel = sequelize.define('Versions', {
+      id: {
+         type: DataTypes.INTEGER,
+         autoIncrement: true,
+         primaryKey: true,
+      },
+      versionNumber: {
+         // eslint-disable-next-line new-cap
+         type: DataTypes.STRING(10),
+         unique: true,
+      },
+      // eslint-disable-next-line new-cap
+      changelog: DataTypes.STRING(10000),
+   });
+
    usersModel.hasOne(subscriptionsModel);
    subscriptionsModel.belongsTo(usersModel);
 
@@ -147,6 +166,7 @@ module.exports.init = async (client) => {
    await guildsModel.sync();
    await quizzQuestionsModel.sync();
    await quizzAnswersModel.sync();
+   await versionsModel.sync();
 };
 
 module.exports.usersModel = () => sequelize.models.Users;
@@ -160,3 +180,6 @@ module.exports.guildsModel = () => sequelize.models.Guilds;
 module.exports.quizzQuestionsModel = () => sequelize.models.QuizzQuestions;
 
 module.exports.quizzAnswersModel = () => sequelize.models.QuizzAnswers;
+
+module.exports.versionsModel = () => sequelize.models.Versions;
+

@@ -89,7 +89,7 @@ module.exports.run = async (_client, interaction) => {
       if (confirmation.customId === 'confirm') {
          let user = await usersModel().findOne({ where: { userId: interaction.user.id } });
          if (!user) {
-            user = usersModel().build({ userId: interaction.user.id, guildId: interaction.guildId });
+            user = usersModel().build({ userId: interaction.user.id, guildId: interaction.guildId, subscribedChangelog: true });
             await user.save();
          }
 

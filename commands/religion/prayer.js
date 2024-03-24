@@ -62,7 +62,7 @@ module.exports.run = (_client, interaction) => {
                { name: ':clock6: **Isha**', value: `${this.getTimesFromIsoDatetime(data.Isha, data[timezone])}`, inline: true },
             )
             .setURL(vars.topggUrl)
-            .setFooter({ text: 'MuslimBot 🕋 - For any help type /help command' });
+            .setFooter({ text: `${require('../../package.json').version} - MuslimBot 🕋 - For any help type /help command` });
          return interaction.reply({ embeds: [embed] });
       })
       .catch((error) => {
