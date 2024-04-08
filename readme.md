@@ -3,6 +3,7 @@
 
 ![Discord Bots](https://top.gg/api/widget/servers/1183399354166415481.svg)
 
+[![Quality gate](https://sonar.smokhtari.com/api/project_badges/quality_gate?project=Muslim-Bot&token=sqb_7c9ab38f18b13ebcb87e84e8566125685cdabc51)](https://sonar.smokhtari.com/dashboard?id=Muslim-Bot)
 
 ### Welcome to the Muslim Discord Bot! 
 This bot is designed to assist the Muslim community by providing accurate prayer times based on their locations and allowing users to subscribe to automated prayer time notifications.

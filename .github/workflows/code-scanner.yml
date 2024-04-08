@@ -1,33 +1,27 @@
-name: Code Scanner
+name: SonarQube Code Scanner
+run-name: "Code Scanner using SonarQube"
 
 on:
-  push:
-     branches:
-      - main
-  pull_request:
-    types:
-      - opened
-      - edited
-      - reopened
-      - synchronize
-    branches:
-      - main
-
+   pull_request:
+      types: [opened, reopened, synchronize]
+      branches: [main]
+   push:
+      branches: [main]
+   
 jobs:
-   code-scanner:
-      runs-on: ubuntu-latest
-      steps:
-        - name: Checkout
-          uses: actions/checkout@v4
-        
-        - uses: AppThreat/sast-scan-action@master
-          name: Scan SAST Project
-          with:
-            type: "nodejs"
-        
-        - name: Setup CodeQL
-          uses: github/codeql-action/init@v3
-        - name: Autobuild CodeQL
-          uses: github/codeql-action/autobuild@v3
-        - name: Perform CodeQL Analysis
-          uses: github/codeql-action/analyze@v3
+  code_scanner:
+    permissions: read-all
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+      - uses: sonarsource/sonarqube-scan-action@master
+        name: SonarQube Scan
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL }}
+      - uses: sonarsource/sonarqube-quality-gate-action@master
+        timeout-minutes: 5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
