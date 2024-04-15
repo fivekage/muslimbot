@@ -1,16 +1,5 @@
-module.exports.formatDate = async (date = new Date()) => {
-   const year = date.toLocaleString('default', { year: 'numeric' });
-   const month = date.toLocaleString('default', {
-      month: '2-digit',
-   });
-   const day = date.toLocaleString('default', { day: '2-digit' });
-
-   return [year, month, day].join('-');
-};
-
-module.exports.retrievePrayersOfTheDay = async (city, country, retries, iso8601 = true) => new Promise((resolve, reject) => {
-   const API_ENDPOINT_PRAYERS = `http://api.aladhan.com/v1/timingsByCity/
-   ${this.formatDate(Date.now())}?city=${city}&country=${country}&method=12&iso8601=${iso8601 ? 'true' : 'false'}`;
+module.exports.retrievePrayersOfTheDay = async (city, country, retries, iso8601 = true) => new Promise(async (resolve, reject) => {
+   const API_ENDPOINT_PRAYERS = `http://api.aladhan.com/v1/timingsByCity?city=${city}&country=${country}&method=12&iso8601=${iso8601 ? 'true' : 'false'}`;
    fetch(API_ENDPOINT_PRAYERS)
       .then(async (response) => {
          const json = await response.json();
