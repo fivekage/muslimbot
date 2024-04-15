@@ -1,4 +1,4 @@
-module.exports.retrievePrayersOfTheDay = async (city, country, retries, iso8601 = true) => new Promise(async (resolve, reject) => {
+module.exports.retrievePrayersOfTheDay = async (city, country, retries, iso8601 = true) => await new Promise(async (resolve, reject) => {
    const API_ENDPOINT_PRAYERS = `http://api.aladhan.com/v1/timingsByCity?city=${city}&country=${country}&method=12&iso8601=${iso8601 ? 'true' : 'false'}`;
    fetch(API_ENDPOINT_PRAYERS)
       .then(async (response) => {
