@@ -7,10 +7,10 @@ module.exports.retrievePrayersOfTheDay = async (city, country, retries, iso8601 
             if (retries > 0) {
                // Retry with country undefined to get the default country and look only for the city
                resolve(
-                  this.retrievePrayersOfTheDay(city, '0', retries - 1, iso8601),
+                  await this.retrievePrayersOfTheDay(city, '0', retries - 1, iso8601),
                );
             }
-            throw new Error(json.data ?? 'Location not found');
+            throw new Error(JSON.stringify(json));
          }
 
          return json.data;
