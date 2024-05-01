@@ -1,6 +1,6 @@
 {
   "name": "muslimbot",
-  "version": "1.2.3",
+  "version": "1.2.4",
   "description": "Discord Bot to help muslim community",
   "main": "index.js",
   "scripts": {
@@ -37,12 +37,12 @@
     "fs": "^0.0.2",
     "libsodium-wrappers": "^0.7.13",
     "log4js": "^6.9.1",
-    "mariadb": "^3.2.3",
+    "mariadb": "^3.3.0",
     "mediaplex": "^0.0.9",
     "node-schedule": "^2.1.1",
     "nodemon": "^3.1.0",
     "opusscript": "^0.0.8",
-    "sequelize": "^6.37.1"
+    "sequelize": "^6.37.3"
   },
   "devDependencies": {
     "eslint": "^8.57.0",
