@@ -67,3 +67,12 @@
 
 - Errors checks on users not reachable on release notes notifications.
 (Sorry brothers for the spam in previous release 😅, It will be okay now)
+
+---
+
+## [1.2.4] - 2024-05-01
+
+### Changed
+
+- Fixed the bug related to API Rate Limiting. Some users were not receiving the notifications due to the rate limiting of the API.
+- SonarQube bugs and code smells fixed.

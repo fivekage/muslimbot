@@ -5,6 +5,7 @@ const { usersModel, subscriptionsModel, notificationsModel } = require('../data/
 const vars = require('../commands/_general/vars.js');
 const logger = require('../utils/logger.js');
 const { retrievePrayersOfTheDay } = require('../utils/retrieve_prayers.js');
+const { sleep } = require('../utils/sleep.js');
 // Store job scheduled for each user
 const jobsScheduled = {};
 
@@ -113,32 +114,32 @@ const dailyCallSchedulePrayers = (client) => {
    logger.info(`Job Schedule Prayers ${job.name} scheduled at ${job.nextInvocation()}`);
 };
 
-const schedulePrayersForTheDay = (client) => {
-   subscriptionsModel().findAll({ where: { subscriptionEnabled: true }, include: usersModel() }).then((subscriptions) => {
-      subscriptions.forEach((subscription) => {
-         retrievePrayersOfTheDay(subscription.city, subscription.country, 1, true)
-            .then((prayers) => {
-               const isRamadan = isRamadanMonth(prayers);
-               const isEidUlFitr = isEidUlFitrEvent(prayers);
+const schedulePrayersForTheDay = async (client) => {
+   const userSubscriptions = await subscriptionsModel().findAll({ where: { subscriptionEnabled: true }, include: usersModel() })
+   for (const subscription of userSubscriptions) {
+      await sleep(1 * 1000); // Sleep 1 second to avoid rate limit
+      retrievePrayersOfTheDay(subscription.city, subscription.country, 2, true)
+         .then((prayers) => {
+            const isRamadan = isRamadanMonth(prayers);
+            const isEidUlFitr = isEidUlFitrEvent(prayers);
 
-               Object.keys(prayers).forEach((prayer) => {
-                  if (Object.keys(prayersMessages).includes(prayer)) {
-                     schedulePrayerNotifications(client, subscription, prayer, new Date(prayers[prayer]), isRamadan, isEidUlFitr);
-                  }
-               });
-            })
-            .catch((error) => {
-               logger.error(`Error during retrieve prayers for user ${subscription.User.userId} located at ${subscription.city}, ${subscription.country}.`, error);
-            })
-            .finally(() => {
-               if (jobsScheduled[subscription.User.userId]) {
-                  logger.debug(`Job scheduled for user ${subscription.User.userId} located at ${subscription.city}, ${subscription.country}:`, jobsScheduled[subscription.User.userId]);
-               } else {
-                  logger.debug(`No job scheduled for user ${subscription.User.userId} located at ${subscription.city}, ${subscription.country}`);
+            Object.keys(prayers).forEach((prayer) => {
+               if (Object.keys(prayersMessages).includes(prayer)) {
+                  schedulePrayerNotifications(client, subscription, prayer, new Date(prayers[prayer]), isRamadan, isEidUlFitr);
                }
             });
-      });
-   });
+         })
+         .catch((error) => {
+            logger.error(`Error during retrieve prayers for user ${subscription.User.userId} located at ${subscription.city}, ${subscription.country}.`, error);
+         })
+         .finally(() => {
+            if (jobsScheduled[subscription.User.userId]) {
+               logger.debug(`Job scheduled for user ${subscription.User.userId} located at ${subscription.city}, ${subscription.country}:`, jobsScheduled[subscription.User.userId]);
+            } else {
+               logger.debug(`No job scheduled for user ${subscription.User.userId} located at ${subscription.city}, ${subscription.country}`);
+            }
+         });
+   }
 };
 
 // Handle new subscription
