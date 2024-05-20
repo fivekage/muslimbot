@@ -3,6 +3,7 @@ const { EmbedBuilder, PermissionsBitField } = require('discord.js');
 const { guildsModel } = require('../data/models.js');
 const logger = require('../utils/logger.js');
 const vars = require('../commands/_general/vars.js');
+const { getRandomInt } = require('../utils/random_int.js');
 
 const rule = new schedule.RecurrenceRule();
 
@@ -40,10 +41,10 @@ const dailyCallScheduleHadiths = (client) => {
       }
 
       // Send hadith to all guilds
-      guilds.findAll({ where: { dailyHadithEnabled: 1 } }).then((guildsFiltered) => {
+      guilds.findAll({ where: { dailyHadithEnabled: 1, isStillInGuild: true } }).then((guildsFiltered) => {
          guildsFiltered.forEach(async (guild) => {
             const guildFetched = await client.guilds.fetch(guild.guildId).catch(() => {
-               logger.error(`Error during fetch guild ${guild.guildId}, notifications will be disabled for this guild`);
+               logger.error(`Error during fetch guild ${guild.guildName}, notifications will be disabled for this guild`);
                guild.isStillInGuild = false;
                guild.save();
             });
@@ -56,7 +57,7 @@ const dailyCallScheduleHadiths = (client) => {
             }
 
             if (!channel) {
-               logger.warn('No channel to send the hadith in guild', guild.guildId);
+               logger.warn('No channel to send the hadith in guild', guild.guildName);
                return;
             }
             if (!guildFetched.members.me.permissionsIn(channel.id).has(PermissionsBitField.Flags.SendMessages)) {
@@ -68,7 +69,7 @@ const dailyCallScheduleHadiths = (client) => {
                return;
             }
 
-            logger.info(`Sending hadith to guild ${guild.guildId}`);
+            logger.info(`Sending hadith to guild ${guild.guildName}`);
 
             const hadithBook = hadith.book.replace('`', '');
             const hadithChapterName = hadith.chapterName.replace('`', '');
@@ -77,39 +78,43 @@ const dailyCallScheduleHadiths = (client) => {
                .replace('”', '');
             const hadithHeader = hadith.header?.replace('`', '').replace('\n', '') ?? '\u200B';
 
-            try {
-               const replyEmbed = new EmbedBuilder()
-                  .setTitle('Hadith of the day')
-                  .setDescription(hadithHeader)
-                  .addFields([
-                     {
-                        name: `From : ${hadithBook} - ${hadithBookName}`,
-                        value: hadithChapterName,
-                     },
-                     {
-                        name: '\u200B',
-                        value: `“*${hadithText}*”`,
-                     },
-                     {
-                        name: '\u200B',
-                        value: hadith.refno,
-                     },
-                  ])
-                  .setColor(vars.primaryColor)
-                  .setThumbnail('https://i.imgur.com/DCFtkTv.png')
-                  .setFooter({
-                     text:
-                        !guild.channelAnnouncementId ? 'You can configure a channel to receive theses hadith with /hadith command' :
-                           'MuslimBot 🕋 - For any help type /help command',
-                  });
-
-               channel.send({ embeds: [replyEmbed] }).catch((error) => {
-                  logger.error(`Error during send hadith for guild ${guild.guildId}`, error);
+            const replyEmbed = new EmbedBuilder()
+               .setTitle('Hadith of the day')
+               .setDescription(hadithHeader)
+               .addFields([
+                  {
+                     name: `From : ${hadithBook} - ${hadithBookName}`,
+                     value: hadithChapterName,
+                  },
+                  {
+                     name: '\u200B',
+                     value: `“*${hadithText}*”`,
+                  },
+                  {
+                     name: '\u200B',
+                     value: hadith.refno,
+                  },
+               ])
+               .setColor(vars.primaryColor)
+               .setThumbnail('https://i.imgur.com/DCFtkTv.png')
+               .setFooter({
+                  text:
+                     !guild.channelAnnouncementId ? 'You can configure a channel to receive theses hadith with /hadith command' :
+                        'MuslimBot 🕋 - For any help type /help command',
                });
-               logger.info(`Hadith sent to guild ${guild.guildId}`);
-            } catch (error) {
-               logger.fatal('Error during create embed for hadith', error);
-            }
+
+            channel.send({ embeds: [replyEmbed] }).catch((error) => {
+               // If error, notify administrator and disable hadith
+               logger.error(`Error during send hadith for guild ${guild.guildName}`, error);
+               notifyAdministratorFromMissingChannel(guilds, guild, guildFetched, channel).catch((error) => {
+                  logger.error('Error during notify administrator from missing channel', error);
+               });
+               guild.isStillInGuild = false;
+               guild.save();
+
+               return;
+            });
+            logger.info(`Hadith sent to guild ${guild.guildName}`);
          });
          logger.info(`Hadith sent to ${guilds.length} guilds`);
       });
@@ -119,7 +124,7 @@ const dailyCallScheduleHadiths = (client) => {
 };
 
 const getRandomHadith = async () => {
-   const hadithBook = hadithsBooks[Math.floor(Math.random() * hadithsBooks.length)];
+   const hadithBook = hadithsBooks[getRandomInt(hadithsBooks.length)];
 
    const API_ENDPOINT_HADITH = `${hadithAPIUrl}${hadithBook}`;
    try {
@@ -142,32 +147,36 @@ const notifyAdministratorFromMissingChannel = async (guildsTable, guildEntity, g
       throw Error(`Error during fetch owner guild ${guildFetched.name}`);
    });
 
-   if (admin) {
-      const embed = new EmbedBuilder()
-         .addFields([
-            {
-               name: 'For your information',
-               value: `No channel to send the hadith in your guild <${guildFetched.name}>, please configure a channel with \`/hadith\` command`,
-            },
-            {
-               name: 'Or',
-               value: `Give me the permission to send messages in the channel <#${channel.id}>`,
-            },
-            {
-               name: 'Also, you can',
-               value: 'You can kick me and invite me again, MuslimBot will automatically create a channel to send the hadiths',
-            },
-            {
-               name: 'Otherwise',
-               value: 'If you dont wan\'t to receive the hadiths, you can disable it with `/hadith` command',
-            },
-         ])
-         .setAuthor({ name: 'MuslimBot' })
-         .setColor(vars.primaryColor)
-         .setFooter({ text: `${require('../package.json').version} - MuslimBot 🕋 - For any help type /help command` });
-      admin.send({ embeds: [embed] });
-      guildsTable.update({ channelAnnouncementId: NOT_CONFIGURED_CHANNEL }, { where: { guildId: guildEntity.guildId } });
+   if (!admin) {
+      logger.error(`Error during fetch owner guild ${guildFetched.name}`);
+      return;
    }
+   const embed = new EmbedBuilder()
+      .addFields([
+         {
+            name: 'For your information',
+            value: `No channel to send the hadith in your guild <${guildFetched.name}>, please configure a channel with \`/hadith\` command`,
+         },
+         {
+            name: 'Or',
+            value: `Give me the permission to send messages in the channel <#${channel.id}>`,
+         },
+         {
+            name: 'Also, you can',
+            value: 'You can kick me and invite me again, MuslimBot will automatically create a channel to send the hadiths',
+         },
+         {
+            name: 'Otherwise',
+            value: 'If you dont wan\'t to receive the hadiths, you can disable it with `/hadith` command',
+         },
+      ])
+      .setAuthor({ name: 'MuslimBot' })
+      .setColor(vars.primaryColor)
+      .setFooter({ text: `${require('../package.json').version} - MuslimBot 🕋 - For any help type /help command` });
+
+   admin.send({ embeds: [embed] });
+   guildsTable.update({ channelAnnouncementId: NOT_CONFIGURED_CHANNEL }, { where: { guildId: guildEntity.guildId } });
+
 };
 
 module.exports = {

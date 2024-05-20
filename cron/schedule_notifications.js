@@ -6,6 +6,7 @@ const vars = require('../commands/_general/vars.js');
 const logger = require('../utils/logger.js');
 const { retrievePrayersOfTheDay } = require('../utils/retrieve_prayers.js');
 const { sleep } = require('../utils/sleep.js');
+const { getRandomInt } = require('../utils/random_int.js');
 // Store job scheduled for each user
 const jobsScheduled = {};
 
@@ -20,7 +21,7 @@ const schedulePrayerNotifications = async (client, subscription, prayer, prayerD
    currentDate.setHours(0, 0, 0, 0);
 
    // Check if the notification is already scheduled
-   if (jobsScheduled[userid] && jobsScheduled[userid].includes(prayer)) {
+   if (jobsScheduled[userid]?.includes(prayer)) {
       return;
    }
 
@@ -28,11 +29,13 @@ const schedulePrayerNotifications = async (client, subscription, prayer, prayerD
    schedule.scheduleJob(prayerDateTime, ((p, city, country) => {
       client.users.fetch(userid).then((user) => {
          const embed = new EmbedBuilder()
-            .setTitle(`${p} ☪️ - ${city}, ${country}`)
-            .setDescription(getPrayerMessage(p, isRamadan))
+            .setTitle(`${prayer} ☪️ - ${subscription.city}, ${subscription.country}`)
+            .setDescription("`" + getPrayerMessage(prayer, isRamadan) + "`")
+            .setAuthor({ name: 'MuslimBot 🕋', iconURL: user.avatarURL() })
+            .setThumbnail(vars.prayerGif)
             .setColor(vars.primaryColor)
             .setURL(vars.topggUrl)
-            .setFooter({ text: `${require('../package.json').version} - MuslimBot 🕋 - For any help type /help command` });
+            .setFooter({ text: `${require('../package.json').version} - Please support us 👍 - Command /help for all your need` });
 
 
          // Add Ramadan message
@@ -54,7 +57,7 @@ const schedulePrayerNotifications = async (client, subscription, prayer, prayerD
          // Send notification then update notification to sent in database and remove job from scheduled jobs
          user.send({ embeds: [embed] })
             .then(() => {
-               logger.info(`Notification sent for user ${userid} at ${prayerDateTime} for prayer ${p} located at ${city}, ${country}`);
+               logger.info(`Notification sent for user ${userid} at ${prayerDateTime} for prayer ${p} located at ${city}, ${country} `);
                // Update notification to sent
                NotificationsCtor.findOne({
                   where: {
@@ -70,11 +73,11 @@ const schedulePrayerNotifications = async (client, subscription, prayer, prayerD
                         logger.warn(`Notification not found for user ${userid}`);
                      }
                   }).catch(() => {
-                     logger.error(`Error during update notification for user ${userid} at ${prayerDateTime} for prayer ${p} located at ${city}, ${country}`);
+                     logger.error(`Error during update notification for user ${userid} at ${prayerDateTime} for prayer ${p} located at ${city}, ${country} `);
                   });
             })
             .catch((error) => {
-               logger.error(`Cannot send notification to user ${userid} at ${prayerDateTime} for prayer ${p} located at ${city}, ${country}`, error);
+               logger.error(`Cannot send notification to user ${userid} at ${prayerDateTime} for prayer ${p} located at ${city}, ${country} `, error);
                subscription.subscriptionEnabled = false; // Disable subscription, user not reachable, he has probably blocked the bot or his DM are closed
                subscription.save();
             });
@@ -111,7 +114,7 @@ const dailyCallSchedulePrayers = (client) => {
       schedulePrayersForTheDay(client);
    });
 
-   logger.info(`Job Schedule Prayers ${job.name} scheduled at ${job.nextInvocation()}`);
+   logger.info(`Job Schedule Prayers ${job.name} scheduled at ${job.nextInvocation()} `);
 };
 
 const schedulePrayersForTheDay = async (client) => {
@@ -134,9 +137,9 @@ const schedulePrayersForTheDay = async (client) => {
          })
          .finally(() => {
             if (jobsScheduled[subscription.User.userId]) {
-               logger.debug(`Job scheduled for user ${subscription.User.userId} located at ${subscription.city}, ${subscription.country}:`, jobsScheduled[subscription.User.userId]);
+               logger.debug(`Job scheduled for user ${subscription.User.userId} located at ${subscription.city}, ${subscription.country}: `, jobsScheduled[subscription.User.userId]);
             } else {
-               logger.debug(`No job scheduled for user ${subscription.User.userId} located at ${subscription.city}, ${subscription.country}`);
+               logger.debug(`No job scheduled for user ${subscription.User.userId} located at ${subscription.city}, ${subscription.country} `);
             }
          });
    }
@@ -156,7 +159,7 @@ const schedulePrayerNewSubscription = async (client, subscription) => {
          if (Object.keys(prayersMessages).includes(prayer)) {
             const prayerDateTime = new Date(prayers[prayer]);
             schedulePrayerNotifications(client, subscriptionWithUser, prayer, prayerDateTime, isRamadan, isEidUlFitr);
-            logger.debug(`Job scheduled for new user ${subscriptionWithUser.User.userId} :`, jobsScheduled[subscriptionWithUser.User.userId]);
+            logger.debug(`Job scheduled for new user ${subscriptionWithUser.User.userId} : `, jobsScheduled[subscriptionWithUser.User.userId]);
          }
       });
    } catch (error) {
@@ -166,7 +169,7 @@ const schedulePrayerNewSubscription = async (client, subscription) => {
 
 const getPrayerMessage = (prayer, isRamadan) => {
    if (isRamadan) {
-      if (prayer in ['Fajr', 'Maghrib']) {
+      if (['Fajr', 'Maghrib'].includes(prayer)) {
          return ramadanMessage[prayer][getRandomInt(ramadanMessage[prayer].length)];
       }
    }
@@ -236,15 +239,6 @@ const ramadanMessage = {
       'With the setting of the sun comes the rising of your spirit. Let your Maghrib prayer be a beacon of light in the darkness, guiding you closer to Allah.',
    ],
 };
-
-/**
- * Get a random integer between 0 and max
- * @param {number} max
- * @return {number} a random integer
- */
-function getRandomInt(max) {
-   return Math.floor(Math.random() * max);
-}
 
 module.exports = {
    schedulePrayersForTheDay,

@@ -1,6 +1,6 @@
 {
   "name": "muslimbot",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "description": "Discord Bot to help muslim community",
   "main": "index.js",
   "scripts": {
@@ -30,8 +30,8 @@
   },
   "homepage": "https://github.com/fivekage/muslimbott#readme",
   "dependencies": {
-    "@discordjs/voice": "^0.16.1",
-    "discord.js": "^14.14.1",
+    "@discordjs/voice": "^0.17.0",
+    "discord.js": "^14.15.2",
     "dotenv": "^16.4.5",
     "ffmpeg-static": "^5.2.0",
     "fs": "^0.0.2",

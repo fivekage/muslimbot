@@ -35,11 +35,12 @@ module.exports.run = async (_client, interaction) => {
       return {
          name: `${subscription.country}, ${subscription.city}`,
          createdAt: subscription.createdAt.toLocaleString('en-GB', { timeZone: 'UTC' }),
-         enabled: subscription.subscriptionEnabled ? true : false,
+         enabled: subscription.subscriptionEnabled
       };
    });
    const result = subscriptionsMapped.reduce((x, y) => {
-      (x[y.enabled] = x[y.enabled] || []).push(y);
+      value = x[y.enabled] || [];
+      (x[y.enabled] = value).push(y);
       return x;
    }, {});
 

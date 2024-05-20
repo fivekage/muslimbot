@@ -76,3 +76,14 @@
 
 - Fixed the bug related to API Rate Limiting. Some users were not receiving the notifications due to the rate limiting of the API.
 - SonarQube bugs and code smells fixed.
+
+---
+
+## [1.2.5] - 2024-05-20
+
+### Changed
+
+- Made prayer messages better
+- Improve errors logs and optimized code on hadiths scheduled notifications
+- Updated discordjs package to latest version
+- SonarQube Reliability, Maintenability and Security Hotspots and code smells fixed.

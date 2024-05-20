@@ -20,10 +20,12 @@ module.exports.handleNewGuild = async (client) => {
          permissionOverwrites: [
             {
                id: guild.id,
-               allow: [PermissionsBitField.Flags.ViewChannel],
-               allow: [PermissionsBitField.Flags.AddReactions],
-               allow: [PermissionsBitField.Flags.SendMessages],
-               allow: [PermissionsBitField.Flags.EmbedLinks],
+               allow: [
+                  PermissionsBitField.Flags.ViewChannel,
+                  PermissionsBitField.Flags.AddReactions,
+                  PermissionsBitField.Flags.SendMessages,
+                  PermissionsBitField.Flags.EmbedLinks
+               ],
             },
          ],
       });
