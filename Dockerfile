@@ -1,11 +1,22 @@
-FROM node:20-bullseye-slim AS build
+FROM node:22.2.0-alpine3.19 AS node
 WORKDIR /usr/src/bot
 COPY . /usr/src/bot
 RUN npm install --ignore-scripts
 
-FROM gcr.io/distroless/nodejs20-debian11
-COPY --from=build /usr/src/bot  /usr/src/bot
+
+FROM alpine:3.19
+COPY --from=node /usr/src/bot  /usr/src/bot
 WORKDIR  /usr/src/bot
-CMD ["index.js"]
+
+RUN apk update
+RUN apk add --no-cache ffmpeg
+
+
+COPY --from=node /usr/lib /usr/lib
+COPY --from=node /usr/local/lib /usr/local/lib
+COPY --from=node /usr/local/include /usr/local/include
+COPY --from=node /usr/local/bin /usr/local/bin
+
+CMD ["node", "index.js"]
 
 # Reference https://snyk.io/fr/blog/choosing-the-best-node-js-docker-image/
