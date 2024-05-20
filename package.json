@@ -41,7 +41,7 @@
     "mediaplex": "^0.0.9",
     "node-schedule": "^2.1.1",
     "nodemon": "^3.1.0",
-    "opusscript": "^0.0.8",
+    "opusscript": "^0.1.1",
     "sequelize": "^6.37.3"
   },
   "devDependencies": {
