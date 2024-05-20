@@ -35,7 +35,7 @@ module.exports.playQuran = (client = null) => {
    if (client != null) {
       client.player = player;
    }
-   if (client && client.player != null) {
+   if (client?.player != null) {
       client.player.currentResource = name.slice(4, name.length);
    }
 };

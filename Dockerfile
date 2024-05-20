@@ -1,7 +1,7 @@
 FROM node:20-bullseye-slim AS build
 WORKDIR /usr/src/bot
 COPY . /usr/src/bot
-RUN npm install
+RUN npm install --ignore-scripts
 
 FROM gcr.io/distroless/nodejs20-debian11
 COPY --from=build /usr/src/bot  /usr/src/bot

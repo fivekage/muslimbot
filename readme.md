@@ -47,6 +47,9 @@ To add the Muslim Bot Discord Bot to your server, simply click [here](https://to
 - ❓ **Play a quizz**
 `/quizz`
 
+- 📜 **Get the release notes of the bot**
+`/release_notes`
+
 ### Note
 
 This bot is hosted, and you can add it to your Discord server by following the link provided above.
@@ -54,4 +57,4 @@ This bot is hosted, and you can add it to your Discord server by following the l
 
 ![img](https://media.istockphoto.com/id/157191730/photo/mosque-with-crescent-moon-at-dusk.jpg?s=612x612&w=0&k=20&c=jyWjRjylTcO8cO1cDVVfo-Y8sFuyroBKzIq8r2YKce0=)
 
-*Developed by Samy Mokhtari*
+*Developed by [Samy Mokhtari](https://www.linkedin.com/in/samy-mokhtari/)*

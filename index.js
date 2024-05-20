@@ -27,7 +27,7 @@ const commands = loadAllCommands();
 
 // Initialize client
 const rest = new REST({ version: '10' }).setToken(DISCORD_TOKEN);
-initializationClient(client, rest, DISCORD_TOKEN, CLIENT_ID, commands).catch(console.error).then(() => {
+initializationClient(client, rest, DISCORD_TOKEN, CLIENT_ID, commands).catch(logger.error).then(() => {
    // Initialize database and schedule jobs
    (async (client) => {
       await models.init(client);
@@ -41,8 +41,8 @@ initializationClient(client, rest, DISCORD_TOKEN, CLIENT_ID, commands).catch(con
    playQuran(client);
 
    // Handle interactions
-   handleInteraction(client, commands).catch(console.error);
-   handleNewGuild(client).catch(console.error);
+   handleInteraction(client, commands).catch(logger.error);
+   handleNewGuild(client).catch(logger.error);
 });
 
 process.on('exit', (code) => {

@@ -50,6 +50,10 @@ module.exports.init = async (client) => {
          type: DataTypes.STRING,
          unique: true,
       },
+      timezone: {
+         type: DataTypes.STRING,
+         allowNull: true,
+      },
       guildId: {
          type: DataTypes.STRING,
          allowNull: true,
