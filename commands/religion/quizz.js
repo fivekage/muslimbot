@@ -11,13 +11,17 @@ module.exports.help = {
 };
 
 module.exports.run = async (client, interaction) => {
+
+   // if (!interaction.inGuild()) {
+   //    return interaction.reply({ content: 'This command is only available in a server.', ephemeral: true });
+   // }
    await interaction.deferReply();
 
    let { channel } = await interaction;
    logger.info(`Quizz has been started by ${interaction.user.id}`);
 
-   const guildFetched = await client.guilds.fetch(interaction.guild.id);
-   if (interaction.guild && !guildFetched.members.me.permissionsIn(channel.id).has(PermissionsBitField.Flags.SendMessages)) {
+   const guildFetched = await client.guilds.fetch(interaction.guild?.id);
+   if (guildFetched != null && interaction.guild && !guildFetched.members.me.permissionsIn(channel.id).has(PermissionsBitField.Flags.SendMessages)) {
       logger.warn(`Guild ${interaction.guild.name} doesn't have the permission to send messages in channel ${channel.name}`);
       return;
    }
@@ -35,7 +39,6 @@ module.exports.run = async (client, interaction) => {
       '4️⃣': ':four:',
       '5️⃣': ':five:',
    };
-   const collectorFilter = (reaction, _user) => Object.keys(emojis).includes(reaction.emoji.name);
 
    const quizzQuestions = quizzQuestionsModel();
    const quizzAnswers = quizzAnswersModel();
@@ -44,10 +47,11 @@ module.exports.run = async (client, interaction) => {
    const quizz = await quizzQuestions.findAll({ order: Sequelize.literal('rand()'), limit: 5, include: quizzAnswers });
 
    const quizzKeyValues = [];
-   quizz.forEach((q) => {
+   quizz.forEach(async (q) => {
+      answers = await quizzAnswers.findAll({ where: { quizzQuestionId: q.id } })
       quizzKeyValues.push({
          question: q.question,
-         answers: [...q.quizzAnswersModel.map((a, i) => ({ emoji: Object.keys(emojis)[i], answer: a.answer, valid: a.valid }))],
+         answers: answers.map((a, i) => ({ emoji: Object.keys(emojis)[i], answer: a.answer, valid: a.valid })),
       });
    });
 
@@ -84,17 +88,18 @@ module.exports.run = async (client, interaction) => {
 
       // Awaiting reactions now
       let answered = false;
-      const collector = message.createReactionCollector({ filter: collectorFilter, time: 15_000 });
+      const collectorFilter = (reaction, user) => Object.keys(emojis).includes(reaction.emoji.name) && user.id !== me.id;
+
+      const collector = message.createReactionCollector({ filter: collectorFilter, time: 15_000, max: 1 });
       collector.on('collect', (r) => {
-         if (r.users.cache.last().id != me.id) {
-            const validQuestion = quizzQuestion.answers.find((a) => a.emoji == r.emoji.name).valid;
-            responses.push({
-               valid: validQuestion,
-               user: r.users.cache.last().id,
-            });
-            answered = true;
-            editEmbedWithCorrectAnswser(message, quizzQuestion, validQuestion);
-         }
+         const validQuestion = quizzQuestion.answers.find((a) => a.emoji == r.emoji.name).valid;
+         responses.push({
+            valid: validQuestion,
+            user: r.users.cache.last().id,
+         });
+         answered = true;
+         editEmbedWithCorrectAnswser(message, quizzQuestion, validQuestion);
+
       });
 
       await collector.on('end', async () => {
@@ -108,7 +113,7 @@ module.exports.run = async (client, interaction) => {
    }
    logger.info('Quizz finished for ', interaction?.guild?.id ? `guild ${interaction.guild.name}` : `user ${interaction.user.username}`);
    const embed = new EmbedBuilder()
-      .setAuthor(`Quizz finished for ${interaction.user.username}`)
+      .setAuthor({ name: `Quizz finished for ${interaction.user.username}` })
       .setDescription(`You have reached the end of the quizz, you have **${responses.filter((r) => r.valid).length}** good answers.`)
       .setColor(vars.primaryColor)
       .setFooter({ text: `${require('../../package.json').version} - MuslimBot 🕋 - For any help type /help command` });

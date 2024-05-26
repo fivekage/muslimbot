@@ -10,7 +10,7 @@ module.exports.help = {
 
 module.exports.run = async (client, interaction) => {
    if (!interaction.inGuild()) {
-      interaction.reply({ content: 'You have to send this command from a guild, not in private', ephemeral: true });
+      return interaction.reply({ content: 'You have to send this command from a guild, not in private', ephemeral: true });
    }
 
    const { channel } = interaction.member.voice;
