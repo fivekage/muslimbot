@@ -9,7 +9,11 @@ module.exports.help = {
 
 module.exports.run = (_client, interaction) => {
    // Load all commands and get their name and description
-   const listOfCommands = loadAllCommands().map(
+   const listOfCommands = loadAllCommands().sort((a, b) => {
+      if (a.name < b.name) return -1;
+      if (a.name > b.name) return 1;
+      return 0;
+   }).map(
       (command) => `• **${command.name}** : ${command.description}\n`,
    ).join('');
 
@@ -17,8 +21,8 @@ module.exports.run = (_client, interaction) => {
    const helpEmbed = new EmbedBuilder()
       .setColor(vars.primaryColor)
       .setDescription(listOfCommands)
-      .setAuthor({ name: interaction.user.username })
-      .setTitle('List of available commands')
+      .setAuthor({ name: `For you ${interaction.user.username}` })
+      .setTitle('Commands you can use ! 📜')
       .setFooter({ text: 'Need help? Contact samouik', iconURL: vars.reecoom });
 
    // Send the embed

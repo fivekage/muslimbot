@@ -87,3 +87,18 @@
 - Improve errors logs and optimized code on hadiths scheduled notifications
 - Updated discordjs package to latest version
 - SonarQube Reliability, Maintenability and Security Hotspots and code smells fixed.
+
+---
+
+## [1.2.6] - 2024-05-26
+
+### Added
+
+- Can now run `/quizz` command in DM
+
+### Changed
+
+- Fixed `/subscriptions` and `/quizz` command
+- Make sure we can't use `/quran`, `/hadith` commands in a DM
+- Updated node to 22 version
+- Fixed some SonarQube Reliability, Maintenability and Security Hotspots and code smells

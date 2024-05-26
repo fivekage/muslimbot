@@ -12,7 +12,15 @@ const { playQuran } = require('./utils/play_quran.js');
 const { synchronizeVersion } = require('./utils/sync_version.js');
 require('dotenv').config();
 
-const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, 'GuildVoiceStates', GatewayIntentBits.GuildMessageReactions] });
+const client = new Client({
+   intents: [
+      GatewayIntentBits.Guilds,
+      GatewayIntentBits.GuildMessages,
+      GatewayIntentBits.GuildVoiceStates,
+      GatewayIntentBits.GuildMessageReactions,
+      GatewayIntentBits.DirectMessageReactions
+   ]
+});
 
 const { DISCORD_TOKEN } = process.env;
 const { CLIENT_ID } = process.env;

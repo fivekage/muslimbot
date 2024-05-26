@@ -111,8 +111,6 @@ const dailyCallScheduleHadiths = (client) => {
                });
                guild.isStillInGuild = false;
                guild.save();
-
-               return;
             });
             logger.info(`Hadith sent to guild ${guild.guildName}`);
          });

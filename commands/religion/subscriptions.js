@@ -39,14 +39,14 @@ module.exports.run = async (_client, interaction) => {
       };
    });
    const result = subscriptionsMapped.reduce((x, y) => {
-      value = x[y.enabled] || [];
-      (x[y.enabled] = value).push(y);
+      let value = x[y.enabled] = x[y.enabled] || [];
+      value.push(y);
       return x;
    }, {});
 
    // Get Two subscriptionsModel Groups (Enabled, Disabled)
-   const enabledSubscriptions = result.true;
-   const disabledSubscriptions = result.false;
+   const enabledSubscriptions = result.true || [];
+   const disabledSubscriptions = result.false || [];
 
 
    // Create the embed to send with enabled and disabled subscriptions
@@ -59,14 +59,14 @@ module.exports.run = async (_client, interaction) => {
          ...enabledSubscriptions.map((subscription) => {
             return {
                name: `${subscription.name}`,
-               value: `Currently ${subscription.enabled ? 'enabled' : 'disabled'}, created at ${subscription.createdAt}`,
+               value: `Currently ${subscription.enabled ? '**enabled**' : '*disabled*'}, created at ${subscription.createdAt}`,
                inline: false,
             };
          }),
          ...disabledSubscriptions.map((subscription) => {
             return {
                name: `${subscription.name}`,
-               value: `Currently ${subscription.enabled ? 'enabled' : 'disabled'}, created at ${subscription.createdAt}`,
+               value: `Currently ${subscription.enabled ? '**enabled**' : '*disabled*'}, created at ${subscription.createdAt}`,
                inline: false,
             };
          }),
