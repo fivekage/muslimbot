@@ -59,7 +59,7 @@ module.exports.run = async (_client, interaction) => {
             },
          )
          .setColor(vars.primaryColor)
-         .setFooter({ text: `${require('../../package.json').version} - MuslimBot 🕋 - For any help type /help command` });
+         .setFooter({ text: vars.footerText });
       await interaction.reply({ embeds: [replyEmbed], ephemeral: true });
       return;
    }

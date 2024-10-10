@@ -23,7 +23,7 @@ module.exports.run = (_client, interaction) => {
       .setDescription(listOfCommands)
       .setAuthor({ name: `For you ${interaction.user.username}` })
       .setTitle('Commands you can use ! 📜')
-      .setFooter({ text: 'Need help? Contact samouik', iconURL: vars.reecoom });
+      .setFooter({ text: vars.footerText });
 
    // Send the embed
    return interaction.reply({ embeds: [helpEmbed] });
