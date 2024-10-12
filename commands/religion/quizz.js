@@ -116,7 +116,7 @@ module.exports.run = async (client, interaction) => {
       .setAuthor({ name: `Quizz finished for ${interaction.user.username}` })
       .setDescription(`You have reached the end of the quizz, you have **${responses.filter((r) => r.valid).length}** good answers.`)
       .setColor(vars.primaryColor)
-      .setFooter({ text: `${require('../../package.json').version} - MuslimBot 🕋 - For any help type /help command` });
+      .setFooter({ text: vars.footerText });
 
    await channel.send({ embeds: [embed] });
 };

@@ -102,3 +102,19 @@
 - Make sure we can't use `/quran`, `/hadith` commands in a DM
 - Updated node to 22 version
 - Fixed some SonarQube Reliability, Maintenability and Security Hotspots and code smells
+
+---
+
+## [1.2.7] - 2024-10-12
+
+Hello brothers and sisters, I am happy to announce a new feature on MuslimBot. 🙂
+I hope you will enjoy it, it comes from a suggestions made on the github project. If you'd like to participate in future discussions, head over to my [Github](https://github.com/fivekage/muslimbot/discussions) page and contribute your ideas! 
+Don't forget to pray for Palestine 🇵🇸 and Lebanon 🇱🇧, especially during these difficult times. May Allah grant them peace and relief. 🙏
+
+### Added
+
+- /events command to get current islamic date, events of the day and upcoming events within the next 3 months, try it out!
+
+## Changed
+- Upgraded/Updated all packages to latest version
+  
