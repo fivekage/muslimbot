@@ -117,4 +117,29 @@ Don't forget to pray for Palestine 🇵🇸 and Lebanon 🇱🇧, especially dur
 
 ## Changed
 - Upgraded/Updated all packages to latest version
+
+---
+
+## [1.2.8] - 2024-11-20
+
+Hello brothers and sisters, I am happy to announce a new release on MuslimBot. 🙂
+I am sorry about the recent problems with the bot, I am working on it to fix them.
+
+**If you lose your subscriptions, use `/subscriptions` command to get the list of your subscriptions.**
+
+**If you find them disabled, use `/subscribe <city> <country>` command to get back your subscriptions.`**
+
+If you'd like to contributing to the project, head over to my [Github](https://github.com/fivekage/muslimbot/discussions) page and contribute your ideas! 
+
+### Added
+- Track command activities in the database to create statistics about the usage of the commands.
+
+## Changed
+- Upgraded/Updated all packages to latest version
+- Create database migrations files
+- Fix subscriptions auto-disabling bug..
+- Improve pipelines and GitOps
+- Refactor/Optimize code
+  
+
   

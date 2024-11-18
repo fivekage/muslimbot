@@ -23,6 +23,7 @@ module.exports.run = async (client, interaction) => {
    const guildFetched = await client.guilds.fetch(interaction.guild?.id);
    if (guildFetched != null && interaction.guild && !guildFetched.members.me.permissionsIn(channel.id).has(PermissionsBitField.Flags.SendMessages)) {
       logger.warn(`Guild ${interaction.guild.name} doesn't have the permission to send messages in channel ${channel.name}`);
+      await interaction.editReply({ content: 'I don\'t have the permission to send messages in this channel', ephemeral: true });
       return;
    }
    if (!channel && !interaction.guild) {
@@ -48,7 +49,7 @@ module.exports.run = async (client, interaction) => {
 
    const quizzKeyValues = [];
    quizz.forEach(async (q) => {
-      answers = await quizzAnswers.findAll({ where: { quizzQuestionId: q.id } })
+      answers = await quizzAnswers.findAll({ where: { questionId: q.id } })
       quizzKeyValues.push({
          question: q.question,
          answers: answers.map((a, i) => ({ emoji: Object.keys(emojis)[i], answer: a.answer, valid: a.valid })),

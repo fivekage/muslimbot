@@ -4,7 +4,7 @@ module.exports.AladhanAPI = class {
     * Constructor of the AladhanAPI class
     */
    constructor(maxMonthsUpcomingEvents = 3) {
-      this.base_url = 'http://api.aladhan.com/v1';
+      this.base_url = 'https://api.aladhan.com/v1';
       this.max_months_upcoming_events = maxMonthsUpcomingEvents;
    }
 
@@ -94,7 +94,7 @@ module.exports.AladhanAPI = class {
       const events = [];
       let calendar = await this.getIslamicCalendarByYear(today.getFullYear());
 
-      for (let date = today; date < endDate; date.setMonth(date.getMonth() + 1)) {
+      for (let date = today; date < endDate; date = date.setMonth(date.getMonth() + 1)) {
          // If the month is Janurary, get the next year's calendar
          if (date.getMonth() === 0) { // 0 is January
             calendar = await this.getIslamicCalendarByYear(date.getFullYear());

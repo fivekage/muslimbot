@@ -96,7 +96,7 @@ module.exports.run = async (_client, interaction) => {
          // Find or Create subscription
          const [subscription, created] = await subscriptionsModel().findOrBuild({
             where: {
-               city: city, country: country, UserId: user.id,
+               city: city, country: country, userId: user.id,
             },
             defaults: {
                subscriptionEnabled: true,
