@@ -1,0 +1,45 @@
+name: Deploy DB migrations to production
+
+on:
+  push:
+    branches:
+      - main # Changing the branch here would also work
+    paths-ignore:
+      - 'readme.md'
+      - '.gitignore'
+      - '.github/CODEOWNERS'
+      - '.github/PULL_REQUEST_TEMPLATE.md'
+      - '.github/ISSUE_TEMPLATE/**/*'
+env:
+  env: production
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: Deploy DB migrations
+    defaults:
+        run:
+          shell: bash
+    environment: on-premise
+    steps:
+        - uses: actions/checkout@v4
+
+        - name: Set up Node.js
+          uses: actions/setup-node@v4
+          with:
+            node-version: '20'
+            cache: 'npm'
+
+        - name: Install dependencies
+          run: npm install
+
+        - name: Run migrations
+          run: |
+            echo "Running migrations"
+            npx sequelize-cli db:migrate --url ${{ env.DATABASE_URL }}
+          env:
+            NODE_ENV: ${{ env.env }}
+            DATABASE_URL: "mariadb://${{secrets.DB_USERNAME}}:${{secrets.DB_PASSWORD}}@${{secrets.DB_HOST}}/${{secrets.DB_DATABASE}}"
+
+
+
