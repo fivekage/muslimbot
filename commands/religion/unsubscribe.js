@@ -40,7 +40,7 @@ module.exports.run = async (_client, interaction) => {
    }
 
    // Get the subscription
-   const subscription = await subscriptionsModel().findOne({ where: { UserId: user.id, city: city, country: country } });
+   const subscription = await subscriptionsModel().findOne({ where: { userId: user.id, city: city, country: country } });
 
    // Check if the subscription exists
    if (!subscription) {

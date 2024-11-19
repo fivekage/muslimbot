@@ -38,7 +38,7 @@ const rest = new REST({ version: '10' }).setToken(DISCORD_TOKEN);
 initializationClient(client, rest, DISCORD_TOKEN, CLIENT_ID, commands).catch(logger.error).then(() => {
    // Initialize database and schedule jobs
    (async (client) => {
-      await models.init(client);
+      await models.defineModels(client);
       dailyCallSchedulePrayers(client);
       schedulePrayersForTheDay(client);
       dailyCallScheduleHadiths(client);
