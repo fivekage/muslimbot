@@ -40,6 +40,7 @@ jobs:
               echo "DISCORD_TOKEN=${{ secrets.DISCORD_TOKEN }}" >> .env
               echo "CLIENT_ID=${{ secrets.CLIENT_ID }}" >> .env
               echo "DB_HOST=${{ secrets.DB_HOST }}" >> .env
+              echo "DB_DATABASE=${{ secrets.DB_DATABASE }}" >> .env
               echo "DB_USERNAME=${{ secrets.DB_USERNAME }}" >> .env
               echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
               echo "HADITH_API_URL=${{ vars.HADITH_API_URL }}" >> .env
