@@ -78,8 +78,6 @@ const schedulePrayerNotifications = async (client, subscription, prayer, prayerD
             })
             .catch((error) => {
                logger.error(`Cannot send notification to user ${userid} at ${prayerDateTime} for prayer ${p} located at ${city}, ${country} `, error);
-               subscription.subscriptionEnabled = false; // Disable subscription, user not reachable, he has probably blocked the bot or his DM are closed
-               subscription.save();
             });
       });
    }).bind(null, prayer, subscription.city, subscription.country));
