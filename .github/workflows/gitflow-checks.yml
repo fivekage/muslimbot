@@ -2,13 +2,8 @@ name: Git Flow Continuous Integration
 
 on:
   pull_request:
-    types:
-      - opened
-      - edited
-      - reopened
-      - synchronize
-    branches:
-      - dev
+    types: [opened, reopened, synchronize]
+    branches: [dev]
 
 permissions:
   contents: read

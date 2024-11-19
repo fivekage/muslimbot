@@ -64,17 +64,7 @@ jobs:
           run: |
             docker build --tag samy266/muslimbot:${{ steps.vars.outputs.sha_short }} --tag samy266/muslimbot:latest .
             docker push samy266/muslimbot:${{ steps.vars.outputs.sha_short }}
-            docker push samy266/muslimbot:latest
-
-        - name: Run migrations
-          run: |
-            cd ${{ env.WORKDIR }}
-            echo "Installing Sequelize dependencies"
-            npm install --save-dev sequelize-cli 
-            echo "Migrating database"
-            npx sequelize-cli db:migrate --env ${{ env.env }}
-          env:
-            DATABASE_URL: "mariadb://${{secrets.DB_USERNAME}}:${{secrets.DB_PASSWORD}}@${{secrets.DB_HOST}}/${{secrets.DB_DATABASE}}"
+            docker push samy266/muslimbot:latest      
 
         - name: 'Sync On Premise Server'
           uses: appleboy/ssh-action@v1.0.0
