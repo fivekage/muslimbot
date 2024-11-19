@@ -2,9 +2,10 @@ const { EmbedBuilder, PermissionsBitField, ChannelType } = require('discord.js')
 const logger = require('../utils/logger.js');
 const { guildsModel } = require('../data/models.js');
 const vars = require('../commands/_general/vars.js');
+const { Events } = require('discord.js');
 
 module.exports.handleNewGuild = async (client) => {
-   client.on('guildCreate', async (guild) => {
+   client.on(Events.GuildCreate, async (guild) => {
       logger.info(`Joined a new guild: ${guild.name} (${guild.id}). This guild has ${guild.memberCount} members!`);
 
       if (!guild.available) {
@@ -37,7 +38,7 @@ module.exports.handleNewGuild = async (client) => {
          defaults: {
             guildName: guild.name,
             dailyHadithEnabled: true,
-            dailyPrayerEnabled: true,
+            isStillInGuild: true,
             channelAnnouncementId: channelHadiths.id,
          },
       });
@@ -66,7 +67,7 @@ module.exports.handleNewGuild = async (client) => {
             },
             {
                name: 'Commands',
-               value: 'Type `/help` to get a list of commands',
+               value: 'Type `/help` to get a list of available commands',
             },
             {
                name: 'Support',

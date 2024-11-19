@@ -50,6 +50,19 @@ To add the Muslim Bot Discord Bot to your server, simply click [here](https://to
 - 📜 **Get the release notes of the bot**
 `/release_notes`
 
+### Sequelize Migration
+
+To perform database migrations, run the following command:
+
+```bash
+npx sequelize-cli migration:generate --name your-migration-name
+```
+
+To apply database migrations, run the following command:
+```bash
+npx sequelize-cli db:migrate
+```
+
 ### Note
 
 This bot is hosted, and you can add it to your Discord server by following the link provided above.

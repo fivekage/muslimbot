@@ -1,10 +1,13 @@
-FROM node:22.2.0-alpine3.19 AS node
+FROM node:22.2.0-alpine3.20 AS node
 WORKDIR /usr/src/bot
 COPY . /usr/src/bot
 RUN npm install --ignore-scripts
 
 
-FROM alpine:3.19
+FROM alpine:3.20
+
+USER root
+
 COPY --from=node /usr/src/bot  /usr/src/bot
 WORKDIR  /usr/src/bot
 
@@ -14,5 +17,7 @@ COPY --from=node /usr/lib /usr/lib
 COPY --from=node /usr/local/lib /usr/local/lib
 COPY --from=node /usr/local/include /usr/local/include
 COPY --from=node /usr/local/bin /usr/local/bin
+
+USER node
 
 CMD ["node", "index.js"]

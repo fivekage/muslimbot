@@ -61,7 +61,7 @@ const schedulePrayerNotifications = async (client, subscription, prayer, prayerD
                // Update notification to sent
                NotificationsCtor.findOne({
                   where: {
-                     prayer: p, UserId: subscription.UserId, SubscriptionId: subscription.id, createdAt: { [Op.gt]: currentDate },
+                     prayer: p, userId: subscription.userId, subscriptionId: subscription.id, createdAt: { [Op.gt]: currentDate },
                   },
                })
                   .then((notification) => {
@@ -90,12 +90,12 @@ const schedulePrayerNotifications = async (client, subscription, prayer, prayerD
    // Create notification if not exists
    const [notification, created] = await NotificationsCtor.findOrCreate({
       where: {
-         prayer, UserId: subscription.UserId, SubscriptionId: subscription.id, createdAt: { [Op.gt]: currentDate },
+         prayer, userId: subscription.userId, subscriptionId: subscription.id, createdAt: { [Op.gt]: currentDate },
       },
       defaults: {
          prayer,
-         UserId: subscription.UserId,
-         SubscriptionId: subscription.id,
+         userId: subscription.userId,
+         subscriptionId: subscription.id,
          sent: false,
          createdAt: new Date(),
       },

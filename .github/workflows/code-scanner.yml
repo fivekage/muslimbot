@@ -4,12 +4,13 @@ run-name: "Code Scanner using SonarQube"
 on:
    pull_request:
       types: [opened, reopened, synchronize]
-      branches: [main]
+      branches: [dev]
    push:
-      branches: [main]
+      branches: [main, dev]
    
 jobs:
   code_scanner:
+    name: SonarQube Code Scanner
     permissions: read-all
     runs-on: ubuntu-latest
     steps:

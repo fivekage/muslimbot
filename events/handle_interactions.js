@@ -1,14 +1,16 @@
 const { Events } = require('discord.js');
 const logger = require('../utils/logger');
-
+const { trackCommandActivities } = require('../utils/track_commands_activities');
 module.exports.handleInteraction = async (client, commands) => {
    client.on(Events.InteractionCreate, async (interaction) => {
-      if (interaction.isUserContextMenuCommand()) {
-         // Get the User's username from context menu
-         const { username } = interaction.targetUser;
-         console.log(username);
+      // Track command activities
+      try {
+         await trackCommandActivities(interaction);
+      } catch (error) {
+         logger.warn(error);
       }
 
+      // Handle slash commands
       if (!interaction.isChatInputCommand()) return;
 
       if (commands.some((command) => command.name == interaction.commandName)) {
@@ -24,3 +26,5 @@ module.exports.handleInteraction = async (client, commands) => {
       }
    });
 };
+
+
