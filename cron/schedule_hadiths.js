@@ -37,7 +37,6 @@ const dailyCallScheduleHadiths = (client) => {
             logger.error('Error during retrieve hadith', error);
             return;
          }
-         logger.debug('Hadith length', hadith.hadith_english.length);
       }
 
       // Send hadith to all guilds

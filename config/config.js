@@ -16,9 +16,9 @@ const dbConfig = {
    dialectModule: require('mariadb'),
    benchmark: true, // <-- this one enables tracking execution time
    logging: (sql, timingMs) => {
-      if (timingMs > 5)
+      if (timingMs > 500)
          logger.debug(`${sql} - [Execution time: ${timingMs}ms]`);
-   }, // Log only if query time is greater than 5ms
+   }, // Log only if query time is greater than 500ms
 };
 
 module.exports = {
