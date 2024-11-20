@@ -1,8 +1,5 @@
-## Summary
+## Summary (Optional)
 <!-- Briefly describe the changes and purpose of this PR -->
-
-## Related Issues
-<!-- Link any related issues (e.g., Closes #123) -->
 
 ## Changes
 - [ ] Feature added

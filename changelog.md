@@ -120,7 +120,7 @@ Don't forget to pray for Palestine 🇵🇸 and Lebanon 🇱🇧, especially dur
 
 ---
 
-## [1.2.8] - 2024-11-20
+## [1.2.9] - 2024-11-20
 
 Hello brothers and sisters, I am happy to announce a new release on MuslimBot. 🙂
 I am sorry about the recent problems with the bot, I am working on it to fix them.
