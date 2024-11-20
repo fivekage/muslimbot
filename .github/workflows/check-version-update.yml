@@ -1,0 +1,42 @@
+name: Check Version and Changelog Updates
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  check-updates:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Get the current branch package.json version
+      run: |
+        jq -r '.version' package.json > current_version.txt
+
+    - name: Get the main branch package.json version
+      run: |
+        git fetch origin main
+        git show origin/main:package.json | jq -r '.version' > main_version.txt
+
+    - name: Compare package.json versions
+      run: |
+        if diff -q current_version.txt main_version.txt > /dev/null; then
+          echo "Error: Version has not been updated in package.json"
+          exit 1
+        else
+          echo "Version has been updated."
+        fi
+
+    - name: Check if CHANGELOG.md has been modified
+      run: |
+        git fetch origin main
+        if git diff --exit-code origin/main..HEAD -- CHANGELOG.md; then
+          echo "Error: CHANGELOG.md has not been updated."
+          exit 1
+        else
+          echo "CHANGELOG.md has been updated."
+        fi
