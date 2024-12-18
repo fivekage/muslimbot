@@ -38,8 +38,9 @@ module.exports = {
                               .setDescription(`You can find the details of the new version in the changelog [here](${releaseUrl})`)
                               .setAuthor({ name: 'MuslimBot' })
                               .addFields([
-                                 { name: 'Thank you 🙏', value: `Don't forget to support us on: [Top.gg](${vars.topggUrl})` },
-                                 { name: 'Support', value: `If you have any questions or need help, please open an issue on [GitHub](${vars.githubUrl})` },
+                                 { name: 'Thank you 🙏', value: `If you like the bot, please leave a vote and a review on: [Top.gg](${vars.topggUrl})` },
+                                 { name: 'Donation', value: `If you want to support the bot, you can donate on [PayPal](${vars.paypalDonationUrl})` },
+                                 { name: 'Support', value: `If you have any questions or need help, please open an issue on [GitHub](${vars.githubUrl}/issues)` },
                               ])
                               .setColor(vars.primaryColor)
                               .setFooter({ text: 'MuslimBot 🕋 - Type the command "/release_notes" to enable/disable notifications of patch notes' });
