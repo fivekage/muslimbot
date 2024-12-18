@@ -32,9 +32,10 @@ module.exports = {
                      for (const user of users) {
                         const member = await client.users.fetch(user.userId);
                         if (member) {
+                           const releaseUrl = `${vars.githubUrl}/releases/tag/v${version.versionNumber}`;
                            const embed = new EmbedBuilder()
                               .setTitle('**New version has been Released !**')
-                              .setDescription(latestChangelog)
+                              .setDescription(`You can find the details of the new version in the changelog [here](${releaseUrl})`)
                               .setAuthor({ name: 'MuslimBot' })
                               .addFields([
                                  { name: 'Thank you 🙏', value: `Don't forget to support us on: [Top.gg](${vars.topggUrl})` },

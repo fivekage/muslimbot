@@ -1,0 +1,135 @@
+name: Deploy Docker Package & Release
+
+on:
+  push:
+    branches:
+      - release
+    paths-ignore:
+      - '**/*.md'
+      - 'LICENSE'
+      - 'docs/**'
+      - '.gitignore'
+      - '.github/**'
+env:
+  env: production
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+defaults:
+  run:
+    shell: bash
+
+permissions: write-all
+
+jobs:
+  create_release:
+    runs-on: ubuntu-latest
+    name: Create a new Release
+    outputs:
+      version: ${{ steps.get_version.outputs.version }}
+    steps:
+          - uses: actions/checkout@v4
+          # Create a new tag and release
+
+          - name: Get version from package.json
+            id: get_version
+            run: |
+              VERSION=$(jq -r '.version' package.json)
+              echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+          - name: Extract changelog for the current version
+            id: get_changelog
+            run: |
+              # Read the version from the output of a previous step (for example, from package.json)
+              echo "VERSION=$VERSION"
+
+              
+              # Find the line where the version starts
+              START_LINE=$(grep -n "^## \\[$VERSION\\]" changelog.md | cut -d':' -f1)
+              if [ -z "$START_LINE" ]; then
+                echo "No changelog entry found for version $VERSION" && exit 1
+              fi
+              echo "START_LINE=$START_LINE"
+
+              # Find the line where the next version starts or the end of the file
+              END_LINE=$(grep -n -m 1 "^## \\[" changelog.md | awk -F':' -v start="$START_LINE" '$1 > start {print $1}' | head -n 1)
+              if [ -z "$END_LINE" ]; then
+                END_LINE=$(wc -l < changelog.md) # Default to the last line of the file
+              fi
+              echo "END_LINE=$END_LINE"
+
+              # Extract the changelog content
+              if [ "$START_LINE" -lt "$END_LINE" ]; then
+                changelog=$(sed -n "${START_LINE},$((END_LINE - 1))p" changelog.md | sed '1d')
+              else
+                changelog=""
+              fi
+
+              if [ -z "$changelog" ]; then
+                echo "Failed to extract changelog content for version $VERSION or content is empty" && exit 1
+              fi
+
+              # Output the changelog
+              echo "Changelog content:"
+              echo "$changelog"
+              echo "changelog<<EOF" >> $GITHUB_OUTPUT
+              echo "$changelog" >> $GITHUB_OUTPUT
+              echo "EOF" >> $GITHUB_OUTPUT
+            env:
+              VERSION: ${{ steps.get_version.outputs.version }}
+
+          - name: Create Release
+            uses: actions/create-release@v1
+            with:
+              tag_name: v${{ steps.get_version.outputs.version }}
+              release_name: Release v${{ steps.get_version.outputs.version }}
+              body: ${{ steps.get_changelog.outputs.changelog }}
+              draft: false
+              prerelease: false
+            env:
+              GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              
+  deploy_packages:
+    needs: create_release
+    runs-on: ubuntu-latest
+    name: Deploy Docker Package Release
+    steps:
+          - uses: actions/checkout@v4
+        
+          - name: Log in to the Container registry
+            uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
+            with:
+              registry: ${{ env.REGISTRY }}
+              username: ${{ github.actor }}
+              password: ${{ secrets.GITHUB_TOKEN }}
+          
+          - name: Extract metadata (tags, labels) for Docker
+            id: meta
+            uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
+            with:
+              images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+      
+          - name: Build and push Docker image
+            id: push
+            uses: docker/build-push-action@f2a1d5e99d037542a71f64918e516c093c6f3fc4
+            with:
+              context: .
+              push: true
+              tags: |
+                ${{ steps.meta.outputs.tags }}
+                ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+                ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.create_release.outputs.version }}
+              labels: ${{ steps.meta.outputs.labels }}
+
+          - name: Save Docker Image Metadata
+            id: image-metadata
+            run: echo "tags=${{ steps.meta.outputs.tags }}" >> $GITHUB_ENV
+
+          - name: Generate artifact attestation
+            uses: actions/attest-build-provenance@v1
+            with:
+              subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}
+              subject-digest: ${{ steps.push.outputs.digest }}
+              push-to-registry: true
+
+          
