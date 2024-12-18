@@ -1,4 +1,4 @@
-const { AladhanAPI } = require('./aladhan_api.js');
+const { AladhanAPI } = require('../apis/aladhan_api.js');
 
 
 module.exports.retrievePrayersOfTheDay = async (city, country, retries, iso8601 = true) => await new Promise((resolve, reject) => {

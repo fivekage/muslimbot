@@ -14,7 +14,7 @@ module.exports.trackCommandActivities = async (interaction) => {
 
    let [user, created] = await usersModel().findOrCreate({
       where: { userId: interaction.user.id },
-      defaults: { userId: interaction.user.id, guildId: interaction.guild.id, subscribedChangelog: true }
+      defaults: { userId: interaction.user.id, guildId: interaction?.guild?.id, subscribedChangelog: true }
    });
    if (created) {
       logger.info(`New user ${user.userId} created during command ${interaction.commandName}`);
