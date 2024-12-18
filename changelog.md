@@ -141,5 +141,21 @@ If you'd like to contributing to the project, head over to my [Github](https://g
 - Improve pipelines and GitOps
 - Refactor/Optimize code
   
+---
+
+## [1.2.10] - 2024-12-18
+
+Hello brothers and sisters, I am happy to announce a new release on MuslimBot. 🙂
+
+If you'd like to contributing to the project, head over to my [Github](https://github.com/fivekage/muslimbot/discussions) page and contribute your ideas! 
+
+### Added
+- Deploy Release Job on Github
+- Add link to release notes in the changelog sent on discord
+- Create 2 templates (feature,bug) for github issues
+
+## Changed
+- Move Docker Image to Github Container Registry
+  
 
   
