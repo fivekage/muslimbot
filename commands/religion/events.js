@@ -13,7 +13,7 @@ module.exports.help = {
 
 module.exports.run = async (_client, interaction) => {
 
-   await interaction.deferReply({ ephemeral: true });
+   await interaction.deferReply();
    const aladhanAPIObj = new AladhanAPI(3);
 
    try {

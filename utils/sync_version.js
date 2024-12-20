@@ -39,7 +39,7 @@ module.exports = {
                               .setAuthor({ name: 'MuslimBot' })
                               .addFields([
                                  { name: 'Thank you 🙏', value: `If you like the bot, please leave a vote and a review on: [Top.gg](${vars.topggUrl})` },
-                                 { name: 'Donation', value: `If you want to support the bot, you can donate on [PayPal](${vars.paypalDonationUrl})` },
+                                 { name: 'Donation', value: `If you want to support the project, you can make a [Donation](${vars.paypalDonationUrl})` },
                                  { name: 'Support', value: `If you have any questions or need help, please open an issue on [GitHub](${vars.githubUrl}/issues)` },
                               ])
                               .setColor(vars.primaryColor)
