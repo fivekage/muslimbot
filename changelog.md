@@ -147,12 +147,13 @@ If you'd like to contributing to the project, head over to my [Github](https://g
 
 Hello brothers and sisters, I am happy to announce a new release on MuslimBot. 🙂
 
-If you'd like to contributing to the project, head over to my [Github](https://github.com/fivekage/muslimbot/discussions) page and contribute your ideas! 
+If you like to contributing to the project, head over to my [Github](https://github.com/fivekage/muslimbot/discussions) page and contribute your ideas! 
 
 ### Added
 - Deploy Release Job on Github
 - Add link to release notes in the changelog sent on discord
 - Create 2 templates (feature,bug) for github issues
+- Autocomplete for commands: `/prayer`, `/subscribe` and `/unsubscribe` . It will help the user to find the city and country they want to subscribe to.
 
 ## Changed
 - Move Docker Image to Github Container Registry
