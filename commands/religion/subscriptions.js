@@ -59,14 +59,14 @@ module.exports.run = async (_client, interaction) => {
          ...enabledSubscriptions.map((subscription) => {
             return {
                name: `${subscription.name}`,
-               value: `Currently ${subscription.enabled ? '**enabled**' : '*disabled*'}, created at ${subscription.createdAt}`,
+               value: `Currently **enabled**, created at ${subscription.createdAt}`,
                inline: false,
             };
          }),
          ...disabledSubscriptions.map((subscription) => {
             return {
-               name: `${subscription.name}`,
-               value: `Currently ${subscription.enabled ? '**enabled**' : '*disabled*'}, created at ${subscription.createdAt}`,
+               name: `~~${subscription.name}~~`,
+               value: `Currently disabled, created at ${subscription.createdAt}`,
                inline: false,
             };
          }),
