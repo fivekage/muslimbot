@@ -5,7 +5,7 @@ const logger = require('../utils/logger.js');
 const config = require('../config/config.js');
 
 const sequelizeInstance = () => {
-   logger.info('Database Used :', config[process.env.NODE_ENV].DB_DATABASE);
+   logger.info('Database Used :', config[process.env.NODE_ENV].database);
    return new Sequelize(config[process.env.NODE_ENV]);
 };
 

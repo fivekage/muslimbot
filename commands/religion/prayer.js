@@ -2,22 +2,32 @@ const { EmbedBuilder } = require('discord.js');
 const vars = require('../_general/vars.js');
 const logger = require('../../utils/logger.js');
 const { retrievePrayersOfTheDay } = require('../../utils/retrieve_prayers.js');
+const { CountriesAPI } = require('../../apis/countries_api.js');
+
+const countriesAPI = new CountriesAPI();
+(async () => {
+   await countriesAPI.initialize(); // Pre-fetch countries data
+})();
+const COUNTRY_PARAM_NAME = 'country';
+const CITY_PARAM_NAME = 'city';
 
 module.exports.help = {
    name: 'prayer',
    description: 'Returns the times of each Muslim prayer according to the desired city',
    options: [
       {
-         name: 'city',
-         description: 'The city you want to know the prayer times',
-         type: 3,
-         required: true,
-      },
-      {
          name: 'country',
          description: 'The country you want to know the prayer times',
          type: 3,
          required: true,
+         autocomplete: true
+      },
+      {
+         name: 'city',
+         description: 'The city you want to know the prayer times',
+         type: 3,
+         required: true,
+         autocomplete: true
       },
    ],
 };
@@ -76,4 +86,38 @@ module.exports.run = (_client, interaction) => {
             ephemeral: true,
          });
       });
+};
+
+module.exports.autocomplete = async (interaction) => {
+   const focusedOption = interaction.options.getFocused(true);
+   const focusedValue = interaction.options.getFocused();
+   let choices;
+
+   if (focusedOption.name === COUNTRY_PARAM_NAME) {
+      choices = countriesAPI.getCountriesName();
+   }
+   else if (focusedOption.name === CITY_PARAM_NAME) {
+      // Get country value
+      const countryName = interaction.options.getString(COUNTRY_PARAM_NAME);
+      if (countryName === null) {
+         choices = [];
+      } else {
+         choices = countriesAPI.getCountryCities(countryName);
+      }
+   }
+
+   // Ensure focused value is processed correctly (case-insensitive search)
+   const filtered = choices
+      .filter(choice => {
+         if (focusedValue === null) return true;
+         return choice.toLowerCase().startsWith(focusedValue.toLowerCase())
+      })
+      .slice(0, 25); // Limit to 25 suggestions
+
+   // Respond to the interaction within 3 seconds
+   await interaction.respond(
+      filtered.map(choice => ({ name: choice, value: choice }))
+   ).catch(error => {
+      throw new Error('Error responding to autocomplete interaction:', error);
+   });
 };

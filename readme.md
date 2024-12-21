@@ -1,7 +1,7 @@
 # Muslim Discord Bot
 
 
-![Discord Bots](https://top.gg/api/widget/servers/1183399354166415481.svg)
+![Discord Bots](https://top.gg/api/widget/1183399354166415481.svg)
 
 [![Quality gate](https://sonar.smokhtari.com/api/project_badges/quality_gate?project=Muslim-Bot&token=sqb_7c9ab38f18b13ebcb87e84e8566125685cdabc51)](https://sonar.smokhtari.com/dashboard?id=Muslim-Bot)
 
@@ -17,6 +17,7 @@ Also, users can listen to the Quran *(Mishary Rashid Alafasy)* live from the bot
 - 🙏 **User-Friendly Commands:** Simple and intuitive commands for ease of use.
 - ⌛ **Hadith of the Day:** Users can enable daily hadiths for their server, it will send a random hadith in your server every day.
 - ❓ **Quizz:** Users can play a quizz with the bot, it will ask you a question and you have to answer it, you can play with your friends and see who has the best score.
+- 🚩 **Events:** Get incoming Islamic events like Ramadan, Eid al-Fitr, Eid al-Adha, Ashura, and other significant dates based on the Hijri Calendar.
 
 ## Getting Started
 
@@ -50,18 +51,8 @@ To add the Muslim Bot Discord Bot to your server, simply click [here](https://to
 - 📜 **Get the release notes of the bot**
 `/release_notes`
 
-### Sequelize Migration
-
-To perform database migrations, run the following command:
-
-```bash
-npx sequelize-cli migration:generate --name your-migration-name
-```
-
-To apply database migrations, run the following command:
-```bash
-npx sequelize-cli db:migrate
-```
+- 🚩 **Get incoming events**
+`/events`
 
 ### Note
 

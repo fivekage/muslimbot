@@ -1,0 +1,57 @@
+name: Check if release can be created
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+    branches:
+      - release
+    paths-ignore:
+      - '**/*.md'
+      - 'LICENSE'
+      - 'docs/**'
+      - '.gitignore'
+      - '.github/**'
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  pre-checks_release:
+   runs-on: ubuntu-latest
+   name: Check if release can be created
+   steps:
+     - uses: actions/checkout@v4
+       with:
+         fetch-depth: 0
+
+     - name: Check source branch # Must be dev
+       run: |
+          echo "Source Branch : ${{github.event.pull_request.head.ref}}"
+          if [[ ${{github.event.pull_request.head.ref}} != "dev" ]]; then
+            echo "❌ The source branch must be dev"
+            exit 1
+          else
+            echo "✅ The source branch is dev"
+          fi
+
+ 
+     - name: Get base branch version
+       id: get_base_version
+       run: |
+          BASE_VERSION=$(git show origin/release:package.json | jq -r '.version')
+          echo "base_version=$BASE_VERSION" >> $GITHUB_OUTPUT
+
+     - name: Check for Changelog and Version updates
+       run: |
+          # Check if changelog.md has been modified
+          if ! git diff --name-only origin/release.. | grep -q "^changelog.md$"; then
+          echo "changelog.md was not updated. Please update it with the changes made.";
+          exit 1;
+          fi
+
+          # Check if package.json has been modified
+          if ! git diff --name-only origin/release.. | grep -q "^package.json$"; then
+          echo "package.json was not updated. Please update it with the changes made.";
+          exit 1;
+          fi

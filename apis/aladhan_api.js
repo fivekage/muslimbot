@@ -4,7 +4,7 @@ module.exports.AladhanAPI = class {
     * Constructor of the AladhanAPI class
     */
    constructor(maxMonthsUpcomingEvents = 3) {
-      this.base_url = 'https://api.aladhan.com/v1';
+      this.baseUrl = 'https://api.aladhan.com/v1';
       this.max_months_upcoming_events = maxMonthsUpcomingEvents;
    }
 
@@ -17,9 +17,9 @@ module.exports.AladhanAPI = class {
     * @returns The prayer times of the day
     */
    async getPrayerTimes(city, country, retries, iso8601 = true) {
-      const response = await fetch(`${this.base_url}/timingsByCity?city=${city}&country=${country}&method=12&iso8601=${iso8601 ? 'true' : 'false'}`);
+      const response = await fetch(`${this.baseUrl}/timingsByCity?city=${city}&country=${country}&method=12&iso8601=${iso8601 ? 'true' : 'false'}`);
 
-      if (!response.ok && json.code != 200) { // If the response is not ok
+      if (!response.ok && response.code != 200) { // If the response is not ok
          if (retries > 0) {
             // Retry with country undefined to get the default country and look only for the city
             return await this.retrievePrayersOfTheDay(city, '0', retries - 1, iso8601);
@@ -44,7 +44,7 @@ module.exports.AladhanAPI = class {
     */
    async getIslamicCurrentDay() {
       const currentDate = `${new Date().getDay()}-${new Date().getMonth()}-${new Date().getFullYear()}`;
-      const response = await fetch(`${this.base_url}/gToH/${currentDate}`);
+      const response = await fetch(`${this.baseUrl}/gToH/${currentDate}`);
       const json = await response.json();
 
       if (!response.ok) { // If the response is not ok
@@ -71,7 +71,7 @@ module.exports.AladhanAPI = class {
          throw new Error('Year must be greater than 0');
       }
 
-      const response = await fetch(`${this.base_url}/calendarByCity/${year}/01?country=France&city=Paris&annual=true`);
+      const response = await fetch(`${this.baseUrl}/calendarByCity/${year}/01?country=France&city=Paris&annual=true`);
       const json = await response.json();
 
       if (!response.ok) { // If the response is not ok
@@ -94,7 +94,7 @@ module.exports.AladhanAPI = class {
       const events = [];
       let calendar = await this.getIslamicCalendarByYear(today.getFullYear());
 
-      for (let date = today; date < endDate; date = date.setMonth(date.getMonth() + 1)) {
+      for (let date = today; date < endDate; date.setMonth(date.getMonth() + 1)) {
          // If the month is Janurary, get the next year's calendar
          if (date.getMonth() === 0) { // 0 is January
             calendar = await this.getIslamicCalendarByYear(date.getFullYear());
