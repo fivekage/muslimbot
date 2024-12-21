@@ -1,6 +1,6 @@
 {
   "name": "muslimbot",
-  "version": "1.2.10",
+  "version": "1.2.11",
   "description": "Discord Bot designed to assist and support the Muslim community",
   "main": "index.js",
   "scripts": {
