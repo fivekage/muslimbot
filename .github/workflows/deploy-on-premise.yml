@@ -50,10 +50,12 @@ jobs:
         
         - name: Set output version
           id: vars
-          run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+          run: |
+            # Get version from package.json
+            echo "version=$(jq -r '.version' package.json)" >> $GITHUB_OUTPUT
           
         - name: Check outputs
-          run: echo ${{ steps.vars.outputs.sha_short }}
+          run: echo ${{ steps.vars.outputs.version }}
 
         - name: Login to Github Container Registry
           uses: appleboy/ssh-action@v1.2.0
@@ -85,7 +87,7 @@ jobs:
               --mount type=bind,source=/var/log/muslimbot,target=/usr/src/bot/logs \
               --mount type=bind,source=/home/sm/quran,target=/usr/src/bot/quran \
               --restart=unless-stopped \
-              ghcr.io/fivekage/muslimbot:${{ steps.vars.outputs.sha_short }}
+              ghcr.io/fivekage/muslimbot:${{ steps.vars.outputs.version }}
 
               echo "Docker Container Started Successfully"
               echo "Remove .env file..."
