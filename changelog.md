@@ -143,7 +143,7 @@ If you'd like to contributing to the project, head over to my [Github](https://g
   
 ---
 
-## [1.2.10] - 2024-12-20
+## [1.2.11] - 2024-12-20
 
 Hello brothers and sisters, I am happy to announce a new release on MuslimBot. 🙂
 
@@ -157,6 +157,7 @@ If you like to contributing to the project, head over to my [Github](https://git
 - Create a donation link and embed it in few messages
 - Fix commands_statistics sql view
 - Fix `/events` command
+- Change image registry from dockerhub to github
 
 ## Changed
 - Move Docker Image to Github Container Registry
