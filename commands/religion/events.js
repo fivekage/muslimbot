@@ -3,7 +3,7 @@ const {
 } = require('discord.js');
 const logger = require('../../utils/logger.js');
 const vars = require('../_general/vars.js');
-const { AladhanAPI } = require('../../utils/aladhan_api.js');
+const { AladhanAPI } = require('../../apis/aladhan_api.js');
 
 
 module.exports.help = {
@@ -13,7 +13,7 @@ module.exports.help = {
 
 module.exports.run = async (_client, interaction) => {
 
-   await interaction.deferReply({ ephemeral: true });
+   await interaction.deferReply();
    const aladhanAPIObj = new AladhanAPI(3);
 
    try {

@@ -9,4 +9,4 @@ SELECT
 FROM 
     CommandsActivities
 GROUP BY 
-    commandName, guildId;
+    commandName;

@@ -73,6 +73,10 @@ module.exports.handleNewGuild = async (client) => {
                name: 'Support',
                value: 'If you have any questions or suggestions, please send me a message <@317033647045607424>)',
             },
+            {
+               name: 'Donation',
+               value: `You can [donate](${vars.paypalDonationUrl}) to support the development of MuslimBot`,
+            }
          ])
          .setFooter({ text: `${require('../package.json').version} - MuslimBot 🕋 - For any help type /help command` });
 
