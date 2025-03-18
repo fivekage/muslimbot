@@ -9,7 +9,6 @@ on:
       - "LICENSE"
       - "docs/**"
       - ".gitignore"
-      - ".github/**"
 env:
   env: development
   REGISTRY: ghcr.io
