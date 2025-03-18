@@ -3,7 +3,7 @@ const packageJson = require('../../package.json');
 const paypalDonationUrl = 'https://www.paypal.com/donate/?hosted_button_id=T94D4G4PY3YT8';
 
 module.exports = {
-   primaryColor: '#FFD700',
+   primaryColor: '#66c4f9',
    greenColor: '#008000',
    redColor: '#DB0109',
    errorColor: '#FF0000',

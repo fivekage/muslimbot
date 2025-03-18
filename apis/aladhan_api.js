@@ -5,7 +5,7 @@ module.exports.AladhanAPI = class {
     */
    constructor(maxMonthsUpcomingEvents = 3) {
       this.baseUrl = 'https://api.aladhan.com/v1';
-      this.max_months_upcoming_events = maxMonthsUpcomingEvents;
+      this.maxMonthsUpcomingEvents = maxMonthsUpcomingEvents;
    }
 
    /**
@@ -89,7 +89,7 @@ module.exports.AladhanAPI = class {
    async getIslamicUpcomingEvents() {
       const today = new Date();  // Assume today is December
       const endDate = new Date(today);  // Clone the date
-      endDate.setMonth(today.getMonth() + this.max_months_upcoming_events);  // Adjust the month
+      endDate.setMonth(today.getMonth() + this.maxMonthsUpcomingEvents);  // Adjust the month
 
       const events = [];
       let calendar = await this.getIslamicCalendarByYear(today.getFullYear());
@@ -100,7 +100,6 @@ module.exports.AladhanAPI = class {
             calendar = await this.getIslamicCalendarByYear(date.getFullYear());
          }
          let currentMonth = date.getMonth() + 1; // Get the current month
-         let currentYear = date.getFullYear(); // Get the current year
 
          events.push(...this.getEventsForMonth(calendar[currentMonth])); // +1 because the month is in js, january is 0
 
