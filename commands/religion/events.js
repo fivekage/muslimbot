@@ -26,7 +26,7 @@ module.exports.run = async (_client, interaction) => {
       const upcomingEvents = islamicEvents.length > 0 ? islamicEvents.map((event) => `• ${event.holidays.join(' ')} - ${event.readableDate}`).join('\n') : 'No upcoming events';
       const embed = new EmbedBuilder()
          .setTitle(`Islamic Date: ${islamicCurrentDay.date} ☪️`)
-         .setDescription(`Here are the Islamic events for today and the next ${aladhanAPIObj.max_months_upcoming_events} months`)
+         .setDescription(`Here are the Islamic events for today and the next ${aladhanAPIObj.maxMonthsUpcomingEvents} months`)
          .setColor(vars.primaryColor)
          .addFields([
             {

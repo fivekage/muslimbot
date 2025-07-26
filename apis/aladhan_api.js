@@ -22,7 +22,7 @@ module.exports.AladhanAPI = class {
       if (!response.ok && response.code != 200) { // If the response is not ok
          if (retries > 0) {
             // Retry with country undefined to get the default country and look only for the city
-            return await this.retrievePrayersOfTheDay(city, '0', retries - 1, iso8601);
+            return await this.getPrayerTimes(city, '0', retries - 1, iso8601);
          }
          throw new Error(JSON.stringify(json));
       }
