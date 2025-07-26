@@ -1,116 +1,126 @@
-const { EmbedBuilder, ApplicationCommandOptionType, ChannelType, PermissionsBitField } = require('discord.js');
-const { guildsModel } = require('../../data/models');
+const { EmbedBuilder, ApplicationCommandOptionType } = require('discord.js');
 const logger = require('../../utils/logger.js');
 const vars = require('../_general/vars.js');
+const { HadithsAPI } = require('../../apis/hadiths_api.js');
+const { formatText } = require('../../utils/string_utils.js');
+const hadithsAPI = new HadithsAPI();
+
+const BOOK_PARAM_NAME = 'book';
+const CHAPTER_PARAM_NAME = 'chapter';
+const HADITH_PARAM_NAME = 'hadith';
 
 module.exports.help = {
    name: 'hadith',
-   description: 'Enable or disable daily hadiths',
+   description: 'Get for a hadith',
    options: [
       {
-         name: 'enable',
-         description: 'Enable (True) or disable (False) daily hadiths',
-         type: 5,
+         name: BOOK_PARAM_NAME,
+         description: 'Which book to use for the hadith',
+         type: ApplicationCommandOptionType.String,
          required: true,
-         choices: [
-            {
-               name: 'Enable',
-               value: true,
-            },
-            {
-               name: 'Disable',
-               value: false,
-            },
-         ],
+         choices: hadithsAPI.hadithsBooks.map((book) => ({
+            name: book.replace(/-/g, ' ').replace(/\b\w/g, char => char.toUpperCase()),
+            value: book,
+         })),
       },
       {
-         name: 'channel',
-         description: 'Select channel where to send daily hadiths',
-         required: false,
-         type: ApplicationCommandOptionType.Channel,
-         channel_types: [
-            ChannelType.GroupDM,
-            ChannelType.GuildText,
-            ChannelType.GuildAnnouncement,
-         ],
+         name: CHAPTER_PARAM_NAME,
+         description: 'Which chapter to use for the hadith (autocomplete)',
+         type: ApplicationCommandOptionType.Integer,
+         required: true,
+         autocomplete: true,
+         min_value: 1,
+      },
+      {
+         name: HADITH_PARAM_NAME,
+         description: 'Hadith (number) to retrieve',
+         type: ApplicationCommandOptionType.Integer,
+         required: true,
+         min_value: 1,
       },
    ],
 };
 
-module.exports.run = async (client, interaction) => {
-   // Check whether the command was executed in a server
-   if (!interaction.inGuild()) {
-      return interaction.reply({
-         content: 'This command is only available in a server',
-         ephemeral: true,
-      });
-   }
-
+module.exports.run = async (_client, interaction) => {
    // Get the value of the option "enable"
-   const hadithEnabled = interaction.options.getBoolean(this.help.options[0].name);
-   if (hadithEnabled === null) {
+   const book = interaction.options.getString(BOOK_PARAM_NAME);
+   const chapterNumber = interaction.options.getInteger(CHAPTER_PARAM_NAME);
+   const hadithNumber = interaction.options.getInteger(HADITH_PARAM_NAME);
+   if (book === null || chapterNumber === null || hadithNumber === null) {
       return interaction.reply({
-         content: 'You must specify if you want to enable or disable daily hadiths',
+         content: 'You must specify the book, chapter and hadith number',
          ephemeral: true,
       });
    }
+   logger.info(`Hadith requested: ${book} - Chapter: ${chapterNumber} - Hadith: ${hadithNumber}`);
 
-   // Get the value of the option "channel", check if the option is null if the hadiths are enabled
-   const channelSelected = interaction.options.getChannel(this.help.options[1].name);
-   if (hadithEnabled && channelSelected === null) {
-      return interaction.reply({
-         content: 'You must specify a channel where to send daily hadiths',
-         ephemeral: true,
-      });
+   // Get the hadith from the API
+   const hadith = (await hadithsAPI.getHadith(book, chapterNumber, hadithNumber).catch(error => {
+      logger.error('Error during retrieve hadith', error);
+      return interaction.reply({ content: 'An error occurred while retrieving the hadith', ephemeral: true });
+   }));
+
+
+
+   if (!hadith) {
+      return interaction.reply({ content: 'Hadith not found', ephemeral: true });
    }
-
-   // Fetch Guild,  if doesn't exists, create one
-   const [guild, created] = await guildsModel().findOrBuild({
-      where: { guildId: interaction.guild.id },
-      defaults: {
-         guildName: interaction.guild.name,
-      },
-   }).catch((error) => {
-      logger.error(`Error while fetching guild ${interaction.guild.id} - ${error}`);
-      return interaction.reply({
-         content: 'An error occurred while fetching the guild',
-         ephemeral: true,
-      });
-   });
-   if (created) {
-      logger.info('Guild created for', interaction.user.username);
-   } else {
-      logger.info(`Guild ${interaction.guild.id} already exists for`);
-   }
-
-   // Check if the bot has the permission to send messages in the channel
-   const guildFetched = await client.guilds.fetch(interaction.guild.id);
-   if (hadithEnabled && !guildFetched.members.me.permissionsIn(channelSelected.id).has(PermissionsBitField.Flags.SendMessages)) {
-      const embed = new EmbedBuilder()
-         .setTitle('I am not able to enable daily hadiths in this channel')
-         .addFields([
-            { name: 'What\'s happening?', value: 'I don\'t have permissions to send messages in the selected channel' },
-            { name: 'What to do?', value: 'Try to kick and reinvite the bot to your server, if it didn\'t work, please contact me <@317033647045607424>' },
-         ])
-         .setColor(vars.errorColor)
-         .setFooter({ text: vars.footerText });
-      return interaction.reply({ embeds: [embed] });
-   }
-
-   // Save the new value in the database
-   guild.dailyHadithEnabled = hadithEnabled;
-   guild.channelAnnouncementId = channelSelected?.id;
-   await guild.save();
-   logger.info(`Hadiths option has been changed with ${hadithEnabled} value for guild ${interaction.guild.id}`);
 
    // Send a message to the user
-   const embed = new EmbedBuilder()
-      .setTitle('Hadith of the day')
-      .setDescription(hadithEnabled ?
-         'Hadiths are now enabled, you will receive a hadith in your server everyday' :
-         'Hadiths are now disabled')
+   const englishEmbed = new EmbedBuilder()
+      .setTitle(`🇬🇧 Hadith from ${formatText(hadith.book.bookName)} - ${formatText(hadith.book.writerName)}`)
+      .addFields([
+         {
+            name: `Chapter Name`,
+            value: formatText(hadith.chapter.chapterEnglish),
+            inline: true,
+         }
+      ])
+      .setDescription(`${formatText(hadith.hadithEnglish)}`)
       .setColor(vars.primaryColor)
-      .setFooter({ text: vars.footerText });
+      .setFooter({
+         text: `${vars.footerText}`, iconURL: 'https://i.imgur.com/DCFtkTv.png'
+      });
+   const arabicEmbed = new EmbedBuilder()
+      .setTitle(`🇸🇦 Hadith from ${formatText(hadith.book.bookName)} - ${formatText(hadith.book.writerName)}`)
+      .addFields([
+         {
+            name: `Chapter Name`,
+            value: formatText(hadith.chapter.chapterArabic),
+            inline: true,
+         }
+      ])
+      .setDescription(`
+         ${formatText(hadith.hadithArabic)}
+      `)
+      .setColor(vars.primaryColor)
+      .setFooter({
+         text: `${vars.footerText}`, iconURL: 'https://i.imgur.com/DCFtkTv.png'
+      });
 
-   interaction.reply({ embeds: [embed] });
+   interaction.reply({ embeds: [englishEmbed, arabicEmbed] });
+};
+
+module.exports.autocomplete = async (interaction) => {
+   const focusedOption = interaction.options.getFocused(true);
+   const focusedValue = interaction.options.getFocused();
+   let choices;
+
+   if (focusedOption.name === CHAPTER_PARAM_NAME) {
+      const book = interaction.options.getString(BOOK_PARAM_NAME);
+      choices = (await hadithsAPI.getChapters(book)).map((chapter) => ({ name: chapter.chapterEnglish, value: chapter.chapterNumber }));
+   }
+
+   // Ensure focused value is processed correctly (case-insensitive search)
+   const filtered = choices
+      .filter(choice => {
+         if (focusedValue === null) return true;
+         return choice.name.toLowerCase().startsWith(focusedValue.toLowerCase())
+      })
+      .slice(0, 25); // Limit to 25 suggestions
+
+   // Respond to the interaction within 3 seconds
+   await interaction.respond(filtered).catch(error => {
+      throw new Error('Error responding to autocomplete interaction:', error);
+   });
 };

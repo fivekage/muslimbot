@@ -1,8 +1,8 @@
 /**
  * Get a random integer between 0 and max
- * @param {number} max
- * @return {number} a random integer
+ * @param {int} max
+ * @return {int} a random integer
  */
 module.exports.getRandomInt = (max) => {
-   return Math.floor(Math.random() * max);
+   return parseInt(Math.floor(Math.random() * parseInt(max)));
 }
