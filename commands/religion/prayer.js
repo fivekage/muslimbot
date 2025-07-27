@@ -1,4 +1,4 @@
-const { EmbedBuilder } = require('discord.js');
+const { EmbedBuilder, ApplicationCommandOptionType } = require('discord.js');
 const vars = require('../_general/vars.js');
 const logger = require('../../utils/logger.js');
 const { retrievePrayersOfTheDay } = require('../../utils/retrieve_prayers.js');
@@ -16,16 +16,16 @@ module.exports.help = {
    description: 'Returns the times of each Muslim prayer according to the desired city',
    options: [
       {
-         name: 'country',
+         name: COUNTRY_PARAM_NAME,
          description: 'The country you want to know the prayer times',
-         type: 3,
+         type: ApplicationCommandOptionType.String,
          required: true,
          autocomplete: true
       },
       {
-         name: 'city',
+         name: CITY_PARAM_NAME,
          description: 'The city you want to know the prayer times',
-         type: 3,
+         type: ApplicationCommandOptionType.String,
          required: true,
          autocomplete: true
       },
@@ -42,8 +42,8 @@ module.exports.getTimesFromIsoDatetime = (date, timezone) => {
 };
 
 module.exports.run = (_client, interaction) => {
-   const queryCountry = interaction.options.getString('country');
-   const queryCity = interaction.options.getString('city');
+   const queryCountry = interaction.options.getString(COUNTRY_PARAM_NAME);
+   const queryCity = interaction.options.getString(CITY_PARAM_NAME);
    const city = queryCity.charAt(0).toUpperCase() + queryCity.slice(1).toLowerCase();
    const country = queryCountry.charAt(0).toUpperCase() + queryCountry.slice(1).toLowerCase();
 
