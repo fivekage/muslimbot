@@ -10,7 +10,7 @@ module.exports.help = {
       {
          name: 'enable',
          description: 'Enable (True) or disable (False) daily hadiths',
-         type: 5,
+         type: ApplicationCommandOptionType.Boolean,
          required: true,
          choices: [
             {

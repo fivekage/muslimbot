@@ -177,3 +177,19 @@ If you like to contributing to the project, head over to my [Github](https://git
 ## Changed
 
 - Rework CI/CD pipeline
+
+## [1.2.13] - 2025-07-27
+
+### Added
+
+- Change Source API data for Hadiths
+- Renamed `/hadith` command to `/daily-hadith` -> it will now send a random hadith every day in the server.
+- Add `/hadith` command to get a hadith from a specific book.
+- Fix some minor bugs in the code.
+- Add an option to `/subscriptions` command to show only enabled subscriptions.
+
+## Changed
+
+- Rework all hadiths code to be more readable and maintainable.
+- Update dependencies to latest versions.
+- Fixed `/subscribe` command (it was not working properly).
