@@ -1,4 +1,4 @@
-const { EmbedBuilder } = require('discord.js');
+const { EmbedBuilder, ApplicationCommandOptionType } = require('discord.js');
 const { usersModel, subscriptionsModel } = require('../../data/models.js');
 const vars = require('../_general/vars.js');
 
@@ -12,14 +12,14 @@ module.exports.help = {
       {
          name: COUNTRY_PARAM_NAME,
          description: 'The country where you want to disable the subscription',
-         type: 3,
+         type: ApplicationCommandOptionType.String,
          required: true,
          autocomplete: true
       },
       {
          name: CITY_PARAM_NAME,
          description: 'The city where you want to disable the subscription',
-         type: 3,
+         type: ApplicationCommandOptionType.String,
          required: true,
          autocomplete: true
       }

@@ -1,16 +1,28 @@
 const {
-   EmbedBuilder,
+   EmbedBuilder, ApplicationCommandOptionType
 } = require('discord.js');
 const { subscriptionsModel, usersModel } = require('../../data/models.js');
 const logger = require('../../utils/logger.js');
 const vars = require('../_general/vars.js');
 
+const SHOW_ONLY_ENABLED_PARAM_NAME = 'show_only_enabled';
 module.exports.help = {
    name: 'subscriptions',
    description: 'Get list of your subscriptions',
+   options: [
+      {
+         name: SHOW_ONLY_ENABLED_PARAM_NAME,
+         description: 'Show only enabled subscriptions, hide disabled ones',
+         type: ApplicationCommandOptionType.Boolean,
+         required: false
+      },
+   ]
 };
 
 module.exports.run = async (_client, interaction) => {
+   // Get the value of the option SHOW_ONLY_ENABLED_PARAM_NAME
+   const showOnlyEnabled = interaction.options.getBoolean(SHOW_ONLY_ENABLED_PARAM_NAME) || false;
+
    // Get user and subscriptions
    const user = await usersModel().findOne({ where: { userId: interaction.user.id } });
    const userSubscriptions = await subscriptionsModel().findAll({
@@ -46,7 +58,7 @@ module.exports.run = async (_client, interaction) => {
 
    // Get Two subscriptionsModel Groups (Enabled, Disabled)
    const enabledSubscriptions = result.true || [];
-   const disabledSubscriptions = result.false || [];
+   const disabledSubscriptions = showOnlyEnabled ? [] : result.false || [];
 
 
    // Create the embed to send with enabled and disabled subscriptions

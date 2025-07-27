@@ -20,6 +20,10 @@ module.exports.trackCommandActivities = async (interaction) => {
       logger.info(`New user ${user.userId} created during command ${interaction.commandName}`);
    }
 
+   if (!interaction.commandName || !user.id) {
+      logger.warn(`Command name or user ID is missing for interaction: ${interaction.id}, skipping tracking...`);
+      return;
+   }
    commandsActivities.create({
       commandName: interaction.commandName,
       userId: user.id,

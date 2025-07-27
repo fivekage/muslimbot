@@ -1,5 +1,5 @@
 const {
-   ButtonBuilder, ButtonStyle, EmbedBuilder, ActionRowBuilder,
+   ButtonBuilder, ButtonStyle, EmbedBuilder, ActionRowBuilder, ApplicationCommandOptionType
 } = require('discord.js');
 const { usersModel, subscriptionsModel } = require('../../data/models.js');
 const logger = require('../../utils/logger.js');
@@ -21,14 +21,14 @@ module.exports.help = {
       {
          name: COUNTRY_PARAM_NAME,
          description: 'The country you want to know the prayer times',
-         type: 3,
+         type: ApplicationCommandOptionType.String,
          required: true,
          autocomplete: true
       },
       {
          name: CITY_PARAM_NAME,
          description: 'The city you are in (if you don\'t find your city, you can write it, it will work)',
-         type: 3,
+         type: ApplicationCommandOptionType.String,
          required: true,
          autocomplete: true
       },
