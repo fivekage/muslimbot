@@ -1,16 +1,28 @@
 const {
-   EmbedBuilder,
+   EmbedBuilder, ApplicationCommandOptionType
 } = require('discord.js');
 const { subscriptionsModel, usersModel } = require('../../data/models.js');
 const logger = require('../../utils/logger.js');
 const vars = require('../_general/vars.js');
 
+const SHOW_ONLY_ENABLED_PARAM_NAME = 'show_only_enabled';
 module.exports.help = {
    name: 'subscriptions',
    description: 'Get list of your subscriptions',
+   options: [
+      {
+         name: SHOW_ONLY_ENABLED_PARAM_NAME,
+         description: 'Show only enabled subscriptions, hide disabled ones',
+         type: ApplicationCommandOptionType.Boolean,
+         required: false
+      },
+   ]
 };
 
 module.exports.run = async (_client, interaction) => {
+   // Get the value of the option SHOW_ONLY_ENABLED_PARAM_NAME
+   const showOnlyEnabled = interaction.options.getBoolean(SHOW_ONLY_ENABLED_PARAM_NAME) || false;
+
    // Get user and subscriptions
    const user = await usersModel().findOne({ where: { userId: interaction.user.id } });
    const userSubscriptions = await subscriptionsModel().findAll({
@@ -46,32 +58,38 @@ module.exports.run = async (_client, interaction) => {
 
    // Get Two subscriptionsModel Groups (Enabled, Disabled)
    const enabledSubscriptions = result.true || [];
-   const disabledSubscriptions = result.false || [];
+   const disabledSubscriptions = showOnlyEnabled ? [] : result.false || [];
 
 
    // Create the embed to send with enabled and disabled subscriptions
+   const enabledList = enabledSubscriptions
+      .map(sub => `🟢 **${sub.name}**\n└ Created: \`${sub.createdAt}\``)
+      .join('\n\n');
+
+   const disabledList = disabledSubscriptions.length > 0
+      ? disabledSubscriptions
+         .map(sub => `⚫ ~~${sub.name}~~\n└ Created: \`${sub.createdAt}\``)
+         .join('\n\n')
+      : null;
+
+   const descriptionParts = [];
+
+   if (enabledList) {
+      descriptionParts.push(`## 🟢 Active Subscriptions\n\n${enabledList}`);
+   }
+
+   if (disabledList) {
+      descriptionParts.push(`\n## ⚫ Disabled Subscriptions\n\n${disabledList}`);
+   }
+
    const embed = new EmbedBuilder()
-      .setTitle('Your subscriptions')
-      .setColor(vars.primaryColor)
-      .setAuthor({ name: `For you ${interaction.user.username}` })
-      .setThumbnail('https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3c0cjc1dDd5NTBxOHZ6dThpaXI5dzQ4amhvdXBjempqdnV1MTgyMyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/bDvmNBBqLutSlTLTIo/giphy.gif')
-      .addFields(
-         ...enabledSubscriptions.map((subscription) => {
-            return {
-               name: `${subscription.name}`,
-               value: `Currently **enabled**, created at ${subscription.createdAt}`,
-               inline: false,
-            };
-         }),
-         ...disabledSubscriptions.map((subscription) => {
-            return {
-               name: `~~${subscription.name}~~`,
-               value: `Currently disabled, created at ${subscription.createdAt}`,
-               inline: false,
-            };
-         }),
-      )
-      .setFooter({ text: '(Thank you 🙏) MuslimBot 🕋 - For any help type /help command' });
+      .setColor(vars.subColor)
+      .setTitle('📩 Your Subscriptions')
+      .setDescription(descriptionParts.join('\n'))
+      .setFooter({
+         text: `MuslimBot • Manage anytime with /subscribe`
+      })
+      .setTimestamp();
 
    // Send the embed
    logger.info(`Subscriptions (${userSubscriptions.length}) for ${interaction.user.username} sent`);

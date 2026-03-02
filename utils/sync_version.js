@@ -1,4 +1,4 @@
-const { EmbedBuilder } = require('discord.js');
+const { EmbedBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder } = require('discord.js');
 const { versionsModel, usersModel } = require('../data/models.js');
 const logger = require('./logger.js');
 const vars = require('../commands/_general/vars.js');
@@ -10,6 +10,24 @@ module.exports = {
       // Get the changelog file as markdown
       const changelog = require('fs').readFileSync('changelog.md', 'utf8').split('---');
       const latestChangelog = changelog[changelog.length - 1];
+      const releaseUrl = `${vars.githubUrl}/releases/tag/v${version}`;
+
+      const embed = new EmbedBuilder()
+         .setTitle(`🆕 New Version v${version}`)
+         .setDescription(latestChangelog.substring(0, 1000))
+         .setColor(vars.primaryColor)
+         .setFooter({ text: 'MuslimBot 🕋 - Click the buttons to interact' })
+         .setTimestamp();
+
+      const viewButton = new ButtonBuilder()
+         .setLabel('View Changelog')
+         .setStyle(ButtonStyle.Link)
+         .setURL(releaseUrl);
+
+      const donateButton = new ButtonBuilder()
+         .setLabel('Donate ❤️')
+         .setStyle(ButtonStyle.Link)
+         .setURL(vars.paypalDonationUrl)
 
       // Filter changelog to get only the latest version
       // Check if the version exists in the database, if not, create it
@@ -31,26 +49,9 @@ module.exports = {
                   .then(async (users) => {
                      for (const user of users) {
                         const member = await client.users.fetch(user.userId);
-                        if (member) {
-                           const releaseUrl = `${vars.githubUrl}/releases/tag/v${version.versionNumber}`;
-                           const embed = new EmbedBuilder()
-                              .setTitle('**New version has been Released !**')
-                              .setDescription(`You can find the details of the new version in the changelog [here](${releaseUrl})`)
-                              .setAuthor({ name: 'MuslimBot' })
-                              .addFields([
-                                 { name: 'Thank you 🙏', value: `If you like the bot, please leave a vote and a review on: [Top.gg](${vars.topggUrl})` },
-                                 { name: 'Donation', value: `If you want to support the project, you can make a [Donation](${vars.paypalDonationUrl})` },
-                                 { name: 'Support', value: `If you have any questions or need help, please open an issue on [GitHub](${vars.githubUrl}/issues)` },
-                              ])
-                              .setColor(vars.primaryColor)
-                              .setFooter({ text: 'MuslimBot 🕋 - Type the command "/release_notes" to enable/disable notifications of patch notes' });
+                        const row = new ActionRowBuilder().addComponents(viewButton, donateButton);
 
-                           member.send({
-                              embeds: [embed],
-                           }).catch((error) => {
-                              logger.warn(`Error while sending changelog to ${member.username} - ${error}`);
-                           });
-                        }
+                        await member.send({ embeds: [embed], components: [row] });
                      }
                      logger.info(`Sent changelog to ${users.length} users`);
                   })

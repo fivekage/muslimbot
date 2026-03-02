@@ -3,11 +3,11 @@ const { EmbedBuilder, PermissionsBitField } = require('discord.js');
 const { guildsModel } = require('../data/models.js');
 const logger = require('../utils/logger.js');
 const vars = require('../commands/_general/vars.js');
-const { getRandomInt } = require('../utils/random_int.js');
+const { HadithsAPI } = require('../apis/hadiths_api.js');
+const { formatText } = require('../utils/string_utils.js');
 
 const rule = new schedule.RecurrenceRule();
 
-const hadithAPIUrl = process.env.HADITH_API_URL;
 const NOT_CONFIGURED_CHANNEL = 'NOT_CONFIGURED_CHANNEL';
 
 const dailyCallScheduleHadiths = (client) => {
@@ -25,18 +25,14 @@ const dailyCallScheduleHadiths = (client) => {
    const job = schedule.scheduleJob(rule, async () => {
       const guilds = guildsModel();
       // Fetch hadith
-      let hadithOk = false;
-      let hadith = null;
-      while (!hadithOk) {
-         try {
-            hadith = await getRandomHadith();
-            if (hadith.hadith_english && hadith.hadith_english.length < 1024) { // Discord embed limit
-               hadithOk = true;
-            }
-         } catch (error) {
-            logger.error('Error during retrieve hadith', error);
-            return;
-         }
+      const hadithsAPI = new HadithsAPI();
+      const hadith = await hadithsAPI.getRandomHadith(10).catch((error) => {
+         logger.error('Error during retrieve hadith', error);
+         return;
+      });
+      if (!hadith) {
+         logger.error('Hadith not found, stopping job');
+         return;
       }
 
       // Send hadith to all guilds
@@ -70,39 +66,47 @@ const dailyCallScheduleHadiths = (client) => {
 
             logger.info(`Sending hadith to guild ${guild.guildName}`);
 
-            const hadithBook = hadith.book.replace('`', '');
-            const hadithChapterName = hadith.chapterName.replace('`', '');
-            const hadithBookName = hadith.bookName.replace(/[\t\n]/g, '');
-            const hadithText = hadith.hadith_english.replace('`', '').trim().replace(/[\t\n]/g, '').replace('“', '')
-               .replace('”', '');
-            const hadithHeader = hadith.header?.replace('`', '').replace('\n', '') ?? '\u200B';
-
-            const replyEmbed = new EmbedBuilder()
-               .setTitle('Hadith of the day')
-               .setDescription(hadithHeader)
+            const englishEmbed = new EmbedBuilder()
+               .setTitle(`🇬🇧 Hadith from ${formatText(hadith.book.bookName)} - ${formatText(hadith.book.writerName)}`)
                .addFields([
                   {
-                     name: `From : ${hadithBook} - ${hadithBookName}`,
-                     value: hadithChapterName,
-                  },
-                  {
-                     name: '\u200B',
-                     value: `“*${hadithText}*”`,
-                  },
-                  {
-                     name: '\u200B',
-                     value: hadith.refno,
-                  },
+                     name: `Chapter Name`,
+                     value: formatText(hadith.chapter.chapterEnglish),
+                     inline: true,
+                  }
                ])
+               .setDescription(`${formatText(hadith.hadithEnglish)}`)
                .setColor(vars.primaryColor)
-               .setThumbnail('https://i.imgur.com/DCFtkTv.png')
                .setFooter({
+                  iconURL: 'https://i.imgur.com/DCFtkTv.png',
                   text:
                      !guild.channelAnnouncementId ? 'You can configure a channel to receive theses hadith with /hadith command' :
-                        'MuslimBot 🕋 - For any help type /help command',
+                        `${vars.footerText}`
+               });
+            const arabicEmbed = new EmbedBuilder()
+               .setTitle(`🇸🇦 Hadith from ${formatText(hadith.book.bookName)} - ${formatText(hadith.book.writerName)}`)
+               .addFields([
+                  {
+                     name: `Chapter Name`,
+                     value: formatText(hadith.chapter.chapterArabic),
+                     inline: true,
+                  }
+               ])
+               .setDescription(`
+                     ${formatText(hadith.hadithArabic)}
+                  `)
+               .setColor(vars.primaryColor)
+               .setFooter({
+                  text: `${vars.footerText}`, iconURL: 'https://i.imgur.com/DCFtkTv.png'
+               })
+               .setFooter({
+                  iconURL: 'https://i.imgur.com/DCFtkTv.png',
+                  text:
+                     !guild.channelAnnouncementId ? 'You can configure a channel to receive theses hadith with /hadith command' :
+                        `${vars.footerText}`
                });
 
-            channel.send({ embeds: [replyEmbed] }).catch((error) => {
+            channel.send({ embeds: [englishEmbed, arabicEmbed] }).catch((error) => {
                // If error, notify administrator and disable hadith
                logger.error(`Error during send hadith for guild ${guild.guildName}`, error);
                notifyAdministratorFromMissingChannel(guilds, guild, guildFetched, channel).catch((error) => {
@@ -119,25 +123,6 @@ const dailyCallScheduleHadiths = (client) => {
 
    logger.info(`Job Schedule Hadiths ${job.name} scheduled at ${job.nextInvocation()}`);
 };
-
-const getRandomHadith = async () => {
-   const hadithBook = hadithsBooks[getRandomInt(hadithsBooks.length)];
-
-   const API_ENDPOINT_HADITH = `${hadithAPIUrl}${hadithBook}`;
-   try {
-      const response = await fetch(API_ENDPOINT_HADITH);
-      const data = await response.json();
-      logger.info('Hadih retrieved successfully from API');
-      return data.data;
-   } catch (error) {
-      logger.error('Error during retrieve hadith', error);
-      throw error;
-   }
-};
-
-const hadithsBooks = [
-   'bukhari', 'muslim', 'abudawud', 'ibnmajah', 'tirmidhi',
-];
 
 const notifyAdministratorFromMissingChannel = async (guildsTable, guildEntity, guildFetched, channel) => {
    const admin = await guildFetched.fetchOwner().catch(() => {

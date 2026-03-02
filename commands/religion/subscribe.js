@@ -1,11 +1,12 @@
 const {
-   ButtonBuilder, ButtonStyle, EmbedBuilder, ActionRowBuilder,
+   ButtonBuilder, ButtonStyle, EmbedBuilder, ActionRowBuilder, ApplicationCommandOptionType
 } = require('discord.js');
 const { usersModel, subscriptionsModel } = require('../../data/models.js');
 const logger = require('../../utils/logger.js');
 const { retrievePrayersOfTheDay } = require('../../utils/retrieve_prayers.js');
 const { CountriesAPI } = require('../../apis/countries_api.js');
 const vars = require('../_general/vars.js');
+const { MessageFlags } = require('discord.js');
 
 const countriesAPI = new CountriesAPI();
 (async () => {
@@ -21,14 +22,14 @@ module.exports.help = {
       {
          name: COUNTRY_PARAM_NAME,
          description: 'The country you want to know the prayer times',
-         type: 3,
+         type: ApplicationCommandOptionType.String,
          required: true,
          autocomplete: true
       },
       {
          name: CITY_PARAM_NAME,
          description: 'The city you are in (if you don\'t find your city, you can write it, it will work)',
-         type: 3,
+         type: ApplicationCommandOptionType.String,
          required: true,
          autocomplete: true
       },
@@ -44,14 +45,14 @@ module.exports.run = async (_client, interaction) => {
    if (!city || !country) {
       return interaction.reply({
          content: 'You must specify a city and a country',
-         ephemeral: true,
+         flags: MessageFlags.Ephemeral
       });
    }
 
    if (interaction.user.bot) {
       return interaction.reply({
          content: 'You can\'t subscribe to notifications with a bot account',
-         ephemeral: true,
+         flags: MessageFlags.Ephemeral,
       });
    }
 
@@ -60,43 +61,54 @@ module.exports.run = async (_client, interaction) => {
    if (!locationExists) {
       return interaction.reply({
          embeds: [new EmbedBuilder().setTitle('Location not found').setColor(vars.errorColor)],
-         ephemeral: true,
+         flags: MessageFlags.Ephemeral,
       });
    }
 
    // Create buttons to confirm or cancel
    const confirm = new ButtonBuilder()
-      .setCustomId('confirm')
-      .setLabel('Confirm')
-      .setEmoji('✅')
-      .setStyle(ButtonStyle.Primary);
+      .setCustomId(`confirm_${city}_${country}`)
+      .setLabel('Activate')
+      .setEmoji('🟢')
+      .setStyle(ButtonStyle.Success);
 
    const cancel = new ButtonBuilder()
       .setCustomId('cancel')
       .setLabel('Cancel')
-      .setEmoji('❌')
+      .setEmoji('⚫')
       .setStyle(ButtonStyle.Secondary);
 
    const row = new ActionRowBuilder()
       .addComponents(cancel, confirm);
 
-   // Reply to the user
-   const replyEmbed = new EmbedBuilder()
-      .setTitle('Thank you ! 🙏')
-      .setDescription('You will receive a message to confirm your subscription');
-   await interaction.reply({ embeds: [replyEmbed], ephemeral: true });
-   const response = await interaction.user.send({
-      content: `Are you sure you want to receive notifications for prayers in ${city} ?`,
+   const embed = new EmbedBuilder()
+      .setColor('#0E7C7B')
+      .setTitle('🕌 Confirm Subscription')
+      .setDescription(
+         `You are about to receive prayer notifications for:
+         > 📍 **${city}, ${country}**
+         Do you want to activate it?`
+      )
+      .setFooter({ text: 'MuslimBot • You can unsubscribe anytime' })
+      .setTimestamp();
+
+   await interaction.reply({
+      embeds: [embed],
       components: [row],
+      flags: MessageFlags.Ephemeral
    });
 
-   const collectorFilter = (i) => i.user.id === interaction.user.id;
+   // const collectorFilter = (i) => i.user.id === interaction.user.id;
 
    // Await confirmation
    try {
-      const confirmation = await response.awaitMessageComponent({ filter: collectorFilter, time: 60000 });
+      const message = await interaction.fetchReply();
+      const confirmation = await message.awaitMessageComponent({
+         filter: i => i.user.id === interaction.user.id,
+         time: 60000
+      });
 
-      if (confirmation.customId === 'confirm') {
+      if (confirmation.customId.startsWith('confirm_')) {
          let user = await usersModel().findOne({ where: { userId: interaction.user.id } });
          if (!user) {
             user = usersModel().build({ userId: interaction.user.id, guildId: interaction.guildId, subscribedChangelog: true });
@@ -122,17 +134,46 @@ module.exports.run = async (_client, interaction) => {
          await subscription.save();
          logger.info('Notification for prayer in', city, 'activated for', interaction.user.username);
 
-         // Confirmation message
-         await confirmation.update({ content: `You will receive notifications for prayers in ${city}`, components: [] });
-         await confirmation.message.react('✅');
-         confirm.setDisabled(true);
-         cancel.setDisabled(true);
+         await confirmation.update({
+            embeds: [
+               new EmbedBuilder()
+                  .setColor('#2ECC71')
+                  .setTitle('✅ Subscription Activated')
+                  .setDescription(
+                     `You will now receive notifications for:
+                     > 📍 **${city}, ${country}**
+                     May your prayers be accepted 🤍`
+                  )
+                  .setTimestamp()
+            ],
+            components: []
+         });
+
       } else if (confirmation.customId === 'cancel') {
-         await confirmation.update({ content: 'Action cancelled', components: [] });
+
+         await confirmation.update({
+            embeds: [
+               new EmbedBuilder()
+                  .setColor('#95A5A6')
+                  .setTitle('Action Cancelled')
+                  .setDescription('No changes were made.')
+                  .setTimestamp()
+            ],
+            components: []
+         });
+
       }
-   } catch (e) {
-      logger.error(e);
-      await interaction.editReply({ content: 'Confirmation not received within 1 minute, cancelling', components: [] });
+
+   } catch (err) {
+      await interaction.editReply({
+         embeds: [
+            new EmbedBuilder()
+               .setColor('#E74C3C')
+               .setTitle('⌛ Confirmation Expired')
+               .setDescription('Please run the command again.')
+         ],
+         components: []
+      });
    }
 };
 

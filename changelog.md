@@ -15,7 +15,6 @@
 - feature that is no longer supported
 - unused code
 
-
 ---
 
 ## [1.2.0] - 2024-03-15
@@ -25,14 +24,13 @@
 - `/subscriptions` command : List all the subscriptions of the user.
 - `/unsubscribe` command : Add arguments to unsubcribe only on a city specified (before was all subscriptions).
 - Add comments and documentation on code
-- Add custom messages for ramadan and eid on the bot. 
+- Add custom messages for ramadan and eid on the bot.
 - Add eslint and prettier to the project. Ran the linter and formatter on the code.
 
 ### Changed
 
 - `/subscribe` command : Improve command, add checks to avoid duplicate subscriptions.
 - `/prayer` : Replaced the Imsak time by the Sunrise time in the prayer message.
-
 
 ---
 
@@ -66,7 +64,7 @@
 ### Added
 
 - Errors checks on users not reachable on release notes notifications.
-(Sorry brothers for the spam in previous release 😅, It will be okay now)
+  (Sorry brothers for the spam in previous release 😅, It will be okay now)
 
 ---
 
@@ -108,7 +106,7 @@
 ## [1.2.7] - 2024-10-12
 
 Hello brothers and sisters, I am happy to announce a new feature on MuslimBot. 🙂
-I hope you will enjoy it, it comes from a suggestions made on the github project. If you'd like to participate in future discussions, head over to my [Github](https://github.com/fivekage/muslimbot/discussions) page and contribute your ideas! 
+I hope you will enjoy it, it comes from a suggestions made on the github project. If you'd like to participate in future discussions, head over to my [Github](https://github.com/fivekage/muslimbot/discussions) page and contribute your ideas!
 Don't forget to pray for Palestine 🇵🇸 and Lebanon 🇱🇧, especially during these difficult times. May Allah grant them peace and relief. 🙏
 
 ### Added
@@ -116,6 +114,7 @@ Don't forget to pray for Palestine 🇵🇸 and Lebanon 🇱🇧, especially dur
 - /events command to get current islamic date, events of the day and upcoming events within the next 3 months, try it out!
 
 ## Changed
+
 - Upgraded/Updated all packages to latest version
 
 ---
@@ -129,27 +128,30 @@ I am sorry about the recent problems with the bot, I am working on it to fix the
 
 **If you find them disabled, use `/subscribe <city> <country>` command to get back your subscriptions.`**
 
-If you'd like to contributing to the project, head over to my [Github](https://github.com/fivekage/muslimbot/discussions) page and contribute your ideas! 
+If you'd like to contributing to the project, head over to my [Github](https://github.com/fivekage/muslimbot/discussions) page and contribute your ideas!
 
 ### Added
+
 - Track command activities in the database to create statistics about the usage of the commands.
 
 ## Changed
+
 - Upgraded/Updated all packages to latest version
 - Create database migrations files
 - Fix subscriptions auto-disabling bug..
 - Improve pipelines and GitOps
 - Refactor/Optimize code
-  
+
 ---
 
 ## [1.2.11] - 2024-12-20
 
 Hello brothers and sisters, I am happy to announce a new release on MuslimBot. 🙂
 
-If you like to contributing to the project, head over to my [Github](https://github.com/fivekage/muslimbot/discussions) page and contribute your ideas! 
+If you like to contributing to the project, head over to my [Github](https://github.com/fivekage/muslimbot/discussions) page and contribute your ideas!
 
 ### Added
+
 - Deploy Release Job on Github
 - Add link to release notes in the changelog sent on discord
 - Create 2 templates (feature,bug) for github issues
@@ -160,7 +162,48 @@ If you like to contributing to the project, head over to my [Github](https://git
 - Change image registry from dockerhub to github
 
 ## Changed
-- Move Docker Image to Github Container Registry
-  
 
-  
+- Move Docker Image to Github Container Registry
+
+  ***
+
+---
+
+## [1.2.12] - 2025-03-18
+
+### Added
+
+- Migrate app to be used in a kubernetes cluster
+- Create probes to check if the app is running and ready
+
+## Changed
+
+- Rework CI/CD pipeline
+
+---
+
+## [1.2.13] - 2025-07-27
+
+### Added
+
+- Change Source API data for Hadiths
+- Renamed `/hadith` command to `/daily-hadith` -> it will now send a random hadith every day in the server.
+- Add `/hadith` command to get a hadith from a specific book.
+- Fix some minor bugs in the code.
+- Add an option to `/subscriptions` command to show only enabled subscriptions.
+
+## Changed
+
+- Rework all hadiths code to be more readable and maintainable.
+- Update dependencies to latest versions.
+- Fixed `/subscribe` command (it was not working properly).
+
+---
+
+## [1.3.0] - 2026-02-03
+
+### Changed
+
+- Rework all ux/ui of the bot messages to be more user friendly and attractive.
+- Add more details in the messages
+- Update all dependencies

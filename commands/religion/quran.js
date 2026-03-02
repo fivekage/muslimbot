@@ -1,4 +1,4 @@
-const { EmbedBuilder, PermissionsBitField } = require('discord.js');
+const { EmbedBuilder, PermissionsBitField, MessageFlags } = require('discord.js');
 const vars = require('../_general/vars.js');
 const { connectToChannel } = require('../../utils/play_quran.js');
 const logger = require('../../utils/logger.js');
@@ -10,12 +10,12 @@ module.exports.help = {
 
 module.exports.run = async (client, interaction) => {
    if (!interaction.inGuild()) {
-      return interaction.reply({ content: 'You have to send this command from a guild, not in private', ephemeral: true });
+      return interaction.reply({ content: 'You have to send this command from a guild, not in private', flags: MessageFlags.Ephemeral });
    }
 
    const { channel } = interaction.member.voice;
    if (!channel) {
-      interaction.reply({ content: 'You need to join a voice channel first!', ephemeral: true });
+      interaction.reply({ content: 'You need to join a voice channel first!', flags: MessageFlags.Ephemeral });
       return;
    }
    const guildFetched = await client.guilds.fetch(interaction.guild.id);

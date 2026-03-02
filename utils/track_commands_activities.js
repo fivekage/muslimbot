@@ -3,6 +3,13 @@ const { commandsActivitiesModel, usersModel, guildsModel } = require('../data/mo
 const logger = require('./logger');
 
 module.exports.trackCommandActivities = async (interaction) => {
+   // ✅ Track uniquement les slash commands
+   if (!interaction.isChatInputCommand()) {
+      logger.warn(`Interaction ${interaction.id} is not a chat input command, skipping tracking...`);
+      return;
+   }
+   logger.info(`Tracking command activity for command ${interaction.commandName} by user ${interaction.user.id} in guild ${interaction.guild?.id || 'DM'}`);
+
    const commandsActivities = commandsActivitiesModel();
    let guild = null;
    if (interaction.inGuild()) {
@@ -20,6 +27,10 @@ module.exports.trackCommandActivities = async (interaction) => {
       logger.info(`New user ${user.userId} created during command ${interaction.commandName}`);
    }
 
+   if (!interaction.commandName || !user.id) {
+      logger.warn(`Command name <${interaction.comman > dName} or user ID <${user.id}> is missing for interaction: ${interaction.id}, skipping tracking...`);
+      return;
+   }
    commandsActivities.create({
       commandName: interaction.commandName,
       userId: user.id,

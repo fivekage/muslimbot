@@ -10,6 +10,8 @@ const { dailyCallSchedulePrayers, schedulePrayersForTheDay } = require('./cron/s
 const { dailyCallScheduleHadiths } = require('./cron/schedule_hadiths.js');
 const { playQuran } = require('./utils/play_quran.js');
 const { synchronizeVersion } = require('./utils/sync_version.js');
+const { setStarted, setReady, setNotReady } = require('./utils/probes.js');
+
 require('dotenv').config();
 
 const client = new Client({
@@ -43,6 +45,8 @@ initializationClient(client, rest, DISCORD_TOKEN, CLIENT_ID, commands).catch(log
       schedulePrayersForTheDay(client);
       dailyCallScheduleHadiths(client);
       synchronizeVersion(client);
+
+      setStarted(); // Startup probe
    })(client);
 
    // Play Quran Radio
@@ -51,6 +55,8 @@ initializationClient(client, rest, DISCORD_TOKEN, CLIENT_ID, commands).catch(log
    // Handle interactions
    handleInteraction(client, commands).catch(logger.error);
    handleNewGuild(client).catch(logger.error);
+
+   setReady(); // Mark bot as ready
 });
 
 process.on('exit', (code) => {
@@ -60,5 +66,7 @@ process.on('exit', (code) => {
 });
 
 process.on('SIGINT', () => {
+   setNotReady();
    process.exit();
 });
+

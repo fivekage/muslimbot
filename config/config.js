@@ -14,6 +14,16 @@ const dbConfig = {
    password: DB_PASSWORD,
    dialect: 'mariadb',
    dialectModule: require('mariadb'),
+   dialectOptions: {
+      connectTimeout: 10000, // 10 seconds
+      requestTimeout: 10000, // 10 seconds
+   },
+   pool: {
+      max: 10,
+      min: 1,
+      acquire: 30000, // 30 seconds
+      idle: 10000, // 10 seconds
+   },
    benchmark: true, // <-- this one enables tracking execution time
    logging: (sql, timingMs) => {
       if (timingMs > 500)

@@ -1,6 +1,7 @@
-const { EmbedBuilder } = require('discord.js');
+const { EmbedBuilder, ApplicationCommandOptionType, MessageFlags } = require('discord.js');
 const { usersModel, subscriptionsModel } = require('../../data/models.js');
 const vars = require('../_general/vars.js');
+const logger = require('../../utils/logger.js');
 
 const COUNTRY_PARAM_NAME = 'country';
 const CITY_PARAM_NAME = 'city';
@@ -12,14 +13,14 @@ module.exports.help = {
       {
          name: COUNTRY_PARAM_NAME,
          description: 'The country where you want to disable the subscription',
-         type: 3,
+         type: ApplicationCommandOptionType.String,
          required: true,
          autocomplete: true
       },
       {
          name: CITY_PARAM_NAME,
          description: 'The city where you want to disable the subscription',
-         type: 3,
+         type: ApplicationCommandOptionType.String,
          required: true,
          autocomplete: true
       }
@@ -40,32 +41,25 @@ module.exports.run = async (_client, interaction) => {
          .setTitle('You are not present in our subscriptions')
          .setDescription('You have to subscribe first with the command `/subscribe`')
          .setColor(vars.primaryColor);
-      await interaction.reply({ embeds: [replyEmbed], ephemeral: true });
+      await interaction.reply({ embeds: [replyEmbed], flags: MessageFlags.Ephemeral });
       return;
    }
 
    // Get the subscription
+   logger.info(`User ${interaction.user.id} is trying to unsubscribe from ${city}, ${country}`);
    const subscription = await subscriptionsModel().findOne({ where: { userId: user.id, city: city, country: country } });
 
    // Check if the subscription exists
    if (!subscription) {
       const replyEmbed = new EmbedBuilder()
-         .setTitle('We were not able to find your subscription')
-         .addFields(
-            {
-               name: 'Type `/subscriptions` to get the list of your subscriptions',
-               value: 'Also, if you want to get notified for this location, you can subscribe with the command `/subscribe`',
-               inline: false,
-            },
-            {
-               name: 'Location',
-               value: `${city}, ${country}`,
-               inline: false,
-            },
+         .setColor('#0E7C7B')
+         .setTitle('📭 No Active Subscription')
+         .setDescription(
+            `You don’t have any active subscriptions yet.
+            > Use \`/subscribe\` to start receiving prayer notifications.`
          )
-         .setColor(vars.primaryColor)
-         .setFooter({ text: vars.footerText });
-      await interaction.reply({ embeds: [replyEmbed], ephemeral: true });
+         .setTimestamp();
+      await interaction.reply({ embeds: [replyEmbed], flags: MessageFlags.Ephemeral });
       return;
    }
 
@@ -75,16 +69,17 @@ module.exports.run = async (_client, interaction) => {
 
    // Reply to the user
    const replyEmbed = new EmbedBuilder()
-      .setTitle('Subscription removed ✅')
-      .setDescription('You will no longer receive prayers notifications for this location')
-      .addFields(
-         {
-            name: 'Location',
-            value: `${city}, ${country}`,
-            inline: false,
-         },
+      .setColor('#E74C3C') // rouge soft
+      .setTitle('🗑 Subscription Disabled')
+      .setDescription(
+         `You will no longer receive prayer notifications for:
+         > **${city}, ${country}**
+         You can re-enable it anytime with \`/subscribe\`.`
       )
-      .setColor(vars.primaryColor);
+      .setFooter({
+         text: 'MuslimBot • Manage your notifications anytime'
+      })
+      .setTimestamp();
    return interaction.reply({ embeds: [replyEmbed] });
 };
 

@@ -1,10 +1,10 @@
-FROM node:22.2.0-alpine3.20 AS node
+FROM node:24.14-alpine3.23 AS node
 WORKDIR /usr/src/bot
 COPY . /usr/src/bot
 RUN npm install --ignore-scripts
 
 
-FROM alpine:3.20
+FROM alpine:3.23
 
 USER root
 
