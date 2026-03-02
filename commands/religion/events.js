@@ -1,14 +1,11 @@
-const {
-   EmbedBuilder,
-} = require('discord.js');
+const { EmbedBuilder, MessageFlags } = require('discord.js');
 const logger = require('../../utils/logger.js');
 const vars = require('../_general/vars.js');
 const { AladhanAPI } = require('../../apis/aladhan_api.js');
 
-
 module.exports.help = {
    name: 'events',
-   description: 'Provides information on the day\'s events and those to come',
+   description: 'Provides information about today’s Islamic events and upcoming ones',
 };
 
 module.exports.run = async (_client, interaction) => {
@@ -17,35 +14,55 @@ module.exports.run = async (_client, interaction) => {
    const aladhanAPIObj = new AladhanAPI(3);
 
    try {
-      const islamicCurrentDay = await aladhanAPIObj.getIslamicCurrentDay()
-
-      // Check if the date has an event, if yes, push it in the events array
+      const islamicCurrentDay = await aladhanAPIObj.getIslamicCurrentDay();
       const islamicEvents = await aladhanAPIObj.getIslamicUpcomingEvents();
-      const currentHolidays = islamicCurrentDay?.holidays?.length > 0 ? islamicCurrentDay?.holidays?.join('\n') : 'No event today';
 
-      const upcomingEvents = islamicEvents.length > 0 ? islamicEvents.map((event) => `• ${event.holidays.join(' ')} - ${event.readableDate}`).join('\n') : 'No upcoming events';
+      const currentDate = islamicCurrentDay?.date || 'Unknown date';
+
+      const currentHolidays =
+         islamicCurrentDay?.holidays?.length > 0
+            ? islamicCurrentDay.holidays.map(h => `• ${h}`).join('\n')
+            : 'No special event today 🤍';
+
+      const upcomingEvents =
+         islamicEvents?.length > 0
+            ? islamicEvents
+               .slice(0, 8)
+               .map(event => `• **${event.holidays.join(' ')}**\n  └ 📅 ${event.readableDate}`)
+               .join('\n\n')
+            : 'No upcoming events found.';
+
       const embed = new EmbedBuilder()
-         .setTitle(`Islamic Date: ${islamicCurrentDay.date} ☪️`)
-         .setDescription(`Here are the Islamic events for today and the next ${aladhanAPIObj.maxMonthsUpcomingEvents} months`)
          .setColor(vars.primaryColor)
-         .addFields([
+         .setTitle('☪️ Islamic Events')
+         .setDescription(`📅 **Islamic Date:** ${currentDate}\n\nHere are today’s events and the upcoming ones for the next ${aladhanAPIObj.maxMonthsUpcomingEvents} months.`)
+         .addFields(
             {
-               name: '\u200B',
-               value: currentHolidays.toString(),
+               name: '🌙 Today',
+               value: currentHolidays,
+               inline: false,
             },
             {
-               name: 'Upcoming Events:',
-               value: upcomingEvents
+               name: '📌 Upcoming Events',
+               value: upcomingEvents,
+               inline: false,
             }
-         ]
          )
-         .setTimestamp()
          .setFooter({ text: vars.footerText })
+         .setTimestamp();
 
-      return interaction.editReply({ embeds: [embed], ephemeral: false });
+      return interaction.editReply({ embeds: [embed] });
+
    } catch (error) {
       logger.error(error);
-      return interaction.editReply({ content: 'An error occured while retrieving current day and upcoming events', ephemeral: true });
+      return interaction.editReply({
+         embeds: [
+            new EmbedBuilder()
+               .setColor(vars.errorColor)
+               .setTitle('❌ Error')
+               .setDescription('An error occurred while retrieving Islamic events. Please try again later.')
+         ],
+         flags: MessageFlags.Ephemeral
+      });
    }
-
 };

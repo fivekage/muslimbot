@@ -1,4 +1,11 @@
-const { EmbedBuilder, PermissionsBitField } = require('discord.js');
+const {
+   EmbedBuilder,
+   PermissionsBitField,
+   ActionRowBuilder,
+   ButtonBuilder,
+   ButtonStyle,
+   MessageFlags
+} = require('discord.js');
 const Sequelize = require('sequelize');
 const { quizzQuestionsModel, quizzAnswersModel } = require('../../data/models');
 const logger = require('../../utils/logger.js');
@@ -11,10 +18,6 @@ module.exports.help = {
 };
 
 module.exports.run = async (client, interaction) => {
-
-   // if (!interaction.inGuild()) {
-   //    return interaction.reply({ content: 'This command is only available in a server.', ephemeral: true });
-   // }
    await interaction.deferReply();
 
    let { channel } = await interaction;
@@ -23,7 +26,7 @@ module.exports.run = async (client, interaction) => {
    const guildFetched = await client.guilds.fetch(interaction.guild?.id);
    if (guildFetched != null && interaction.guild && !guildFetched.members.me.permissionsIn(channel.id).has(PermissionsBitField.Flags.SendMessages)) {
       logger.warn(`Guild ${interaction.guild.name} doesn't have the permission to send messages in channel ${channel.name}`);
-      await interaction.editReply({ content: 'I don\'t have the permission to send messages in this channel', ephemeral: true });
+      await interaction.editReply({ content: 'I don\'t have the permission to send messages in this channel', flags: MessageFlags.Ephemeral });
       return;
    }
    if (!channel && !interaction.guild) {
@@ -57,9 +60,15 @@ module.exports.run = async (client, interaction) => {
    });
 
    const embedStart = new EmbedBuilder()
-      .setTitle('Quizz about Islam')
-      .setDescription('This quizz will start in 5 seconds, you will have to answer 5 questions. You will have 15 seconds for each questions.')
-      .setColor(vars.primaryColor)
+      .setColor(vars.quizzColor)
+      .setTitle('🧠 Islamic Quiz Challenge')
+      .setDescription(
+         `You are about to start a 5-question quiz about Islam.
+         ⏳ **15 seconds per question**
+         🏆 Try to get the highest score possible!
+         Starting in **5 seconds...**`
+      )
+      .setFooter({ text: 'MuslimBot • May Allah increase your knowledge 🤍' })
       .setTimestamp();
    await interaction.editReply({ embeds: [embedStart] });
 
@@ -68,56 +77,147 @@ module.exports.run = async (client, interaction) => {
    const me = client.user;
 
    const editEmbedWithCorrectAnswser = (message, quizzQuestion, questionValid) => {
-      const correctEmbed = new EmbedBuilder()
+      const correctAnswer = quizzQuestion.answers.find(a => a.valid);
+
+      const resultEmbed = new EmbedBuilder()
          .setColor(questionValid ? vars.greenColor : vars.redColor)
-         .addFields({ name: quizzQuestion.question, value: quizzQuestion.answers.map((a) => `${a.emoji} ${a.answer} ${a.valid ? '✅' : '❌'}`).join('\n') })
-         .setFooter({ text: `Good answer was : ${quizzQuestion.answers.find((a) => a.valid).answer}` });
-      message.edit({ embeds: [correctEmbed] });
+         .setTitle(questionValid ? '✅ Correct Answer!' : '❌ Wrong Answer')
+         .setDescription(
+            `### ${quizzQuestion.question}
+            ${quizzQuestion.answers
+               .map(a =>
+                  `${a.emoji} ${a.answer} ${a.valid ? '✅' : ''}`
+               ).join('\n')}
+            ${questionValid
+               ? 'Great job! Keep going 🔥'
+               : `The correct answer was:\n**${correctAnswer.answer}**`
+            }`
+         )
+         .setFooter({ text: 'Next question coming...' })
+         .setTimestamp();
+
+      message.edit({ embeds: [resultEmbed] });
    };
 
    const responses = [];
-   for (const quizzQuestion of quizzKeyValues) {
-      // Send quizz
+   for (let i = 0; i < quizzKeyValues.length; i++) {
+      const quizzQuestion = quizzKeyValues[i];
+
+      const buttons = quizzQuestion.answers.map((a, index) =>
+         new ButtonBuilder()
+            .setCustomId(`answer_${index}`)
+            .setLabel(`${index + 1}`)
+            .setStyle(ButtonStyle.Primary)
+      );
+
+      const row = new ActionRowBuilder().addComponents(buttons);
+
       const embed = new EmbedBuilder()
-         .setColor(vars.primaryColor)
-         .addFields({ name: quizzQuestion.question, value: quizzQuestion.answers.map((a) => `${a.emoji} ${a.answer}`).join('\n') });
+         .setColor(vars.quizzColor)
+         .setTitle(`📖 Question ${i + 1}/5`)
+         .setDescription(
+            `### ${quizzQuestion.question}
 
-      const message = await channel.send({ embeds: [embed] });
-      quizzQuestion.answers.forEach(async (a) => {
-         await message.react(a.emoji);
+${quizzQuestion.answers
+               .map((a, idx) => `**${idx + 1}.** ${a.answer}`)
+               .join('\n')}
+
+⏳ *You have 15 seconds to answer...*`
+         )
+         .setTimestamp();
+
+      const message = await channel.send({
+         embeds: [embed],
+         components: [row]
       });
 
-      // Awaiting reactions now
-      let answered = false;
-      const collectorFilter = (reaction, user) => Object.keys(emojis).includes(reaction.emoji.name) && user.id !== me.id;
-
-      const collector = message.createReactionCollector({ filter: collectorFilter, time: 15_000, max: 1 });
-      collector.on('collect', (r) => {
-         const validQuestion = quizzQuestion.answers.find((a) => a.emoji == r.emoji.name).valid;
-         responses.push({
-            valid: validQuestion,
-            user: r.users.cache.last().id,
+      try {
+         const confirmation = await message.awaitMessageComponent({
+            filter: (i) => i.user.id === interaction.user.id,
+            time: 15000
          });
-         answered = true;
-         editEmbedWithCorrectAnswser(message, quizzQuestion, validQuestion);
 
-      });
+         const index = parseInt(confirmation.customId.split('_')[1]);
+         const selected = quizzQuestion.answers[index];
+         const isCorrect = selected.valid;
 
-      await collector.on('end', async () => {
-         if (!answered) {
-            editEmbedWithCorrectAnswser(message, quizzQuestion, false);
-         }
-         answered = true;
-      });
+         responses.push({ valid: isCorrect });
 
-      await waitFor(() => answered === true, 200, 60 * 10000); // checks every 200 milliseconds, 15 seconds timeout
+         // Désactiver les boutons
+         row.components.forEach(btn => btn.setDisabled(true));
+
+         const resultEmbed = new EmbedBuilder()
+            .setColor(isCorrect ? vars.greenColor : vars.redColor)
+            .setTitle(isCorrect ? '✅ Correct Answer!' : '❌ Wrong Answer')
+            .setDescription(
+               `### ${quizzQuestion.question}
+
+${quizzQuestion.answers
+                  .map((a, idx) =>
+                     `**${idx + 1}.** ${a.answer} ${a.valid ? '✅' : ''}`
+                  ).join('\n')}
+
+${isCorrect
+                  ? 'Great job! 🔥'
+                  : `Correct answer: **${quizzQuestion.answers.find(a => a.valid).answer}**`
+               }`
+            )
+            .setTimestamp();
+
+         await confirmation.update({
+            embeds: [resultEmbed],
+            components: [row]
+         });
+
+      } catch (err) {
+         // Temps écoulé
+         row.components.forEach(btn => btn.setDisabled(true));
+
+         responses.push({ valid: false });
+
+         const timeoutEmbed = new EmbedBuilder()
+            .setColor(vars.redColor)
+            .setTitle('⌛ Time’s Up!')
+            .setDescription(
+               `### ${quizzQuestion.question}
+
+${quizzQuestion.answers
+                  .map((a, idx) =>
+                     `**${idx + 1}.** ${a.answer} ${a.valid ? '✅' : ''}`
+                  ).join('\n')}
+
+You didn’t answer in time.`
+            )
+            .setTimestamp();
+
+         await message.edit({
+            embeds: [timeoutEmbed],
+            components: [row]
+         });
+      }
+
+      await sleep(2500);
    }
    logger.info('Quizz finished for ', interaction?.guild?.id ? `guild ${interaction.guild.name}` : `user ${interaction.user.username}`);
+   const score = responses.filter(r => r.valid).length;
+   const percentage = Math.round((score / 5) * 100);
+
    const embed = new EmbedBuilder()
-      .setAuthor({ name: `Quizz finished for ${interaction.user.username}` })
-      .setDescription(`You have reached the end of the quizz, you have **${responses.filter((r) => r.valid).length}** good answers.`)
       .setColor(vars.primaryColor)
-      .setFooter({ text: vars.footerText });
+      .setTitle('🏆 Quiz Completed!')
+      .setDescription(
+         `You have completed the quiz!
+         🎯 **Score:** ${score}/5
+         📊 **Success Rate:** ${percentage}%
+         ${percentage === 100
+            ? '🌟 Perfect score! MashaAllah!'
+            : percentage >= 60
+               ? '👏 Well done! Keep learning!'
+               : '📚 Keep studying and try again!'
+         }`
+      )
+      .setFooter({ text: vars.footerText })
+      .setTimestamp();
 
    await channel.send({ embeds: [embed] });
 };

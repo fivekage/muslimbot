@@ -1,4 +1,4 @@
-const { EmbedBuilder, ApplicationCommandOptionType } = require('discord.js');
+const { EmbedBuilder, ApplicationCommandOptionType, MessageFlags } = require('discord.js');
 const vars = require('../_general/vars.js');
 const logger = require('../../utils/logger.js');
 const { retrievePrayersOfTheDay } = require('../../utils/retrieve_prayers.js');
@@ -50,29 +50,66 @@ module.exports.run = (_client, interaction) => {
    if (!city || !country) {
       return interaction.reply({
          content: 'You must specify a city and a country',
-         ephemeral: true,
+         flags: MessageFlags.Ephemeral,
       });
    }
 
-   const timezone = 'timezone';
-
    retrievePrayersOfTheDay(city, country, 1, true)
       .then((data) => {
+         const timezoneKey = 'timezone';
+
+         const prayers = [
+            { name: 'Fajr', emoji: '🌙', time: data.Fajr },
+            { name: 'Sunrise', emoji: '🌅', time: data.Sunrise },
+            { name: 'Dhuhr', emoji: '☀️', time: data.Dhuhr },
+            { name: 'Asr', emoji: '🌇', time: data.Asr },
+            { name: 'Maghrib', emoji: '🌆', time: data.Maghrib },
+            { name: 'Isha', emoji: '🌙', time: data.Isha },
+         ];
+
+         const formattedPrayers = prayers.map(p => {
+            const isoDate = new Date(p.time);
+            return {
+               ...p,
+               iso: isoDate,
+               formatted: this.getTimesFromIsoDatetime(p.time, data[timezoneKey])
+            };
+         });
+
+         const now = new Date();
+
+         // Déterminer prochaine prière
+         let nextPrayer = formattedPrayers.find(p => p.iso > now);
+
+         if (!nextPrayer) {
+            nextPrayer = formattedPrayers[0]; // lendemain fallback
+         }
+
+         const description = `
+      ## ⏳ Next Prayer
+
+      > ${nextPrayer.emoji} **${nextPrayer.name}**
+      > ⏰ \`${nextPrayer.formatted}\`
+
+      ──────────────
+      `;
+
          const embed = new EmbedBuilder()
-            .setTitle(`Prayer times for ${city}, ${country}`)
-            .setColor(vars.primaryColor)
-            .setAuthor({ name: `For you ${interaction.user.username}` })
-            .setThumbnail('https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExc2syc3F3ODZpaW50MnQ1ZzVwYWdhbXl6em5zcHMzOTVqMmhseGhhNSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/12ihpr4WmwKJsQ/giphy.gif')
+            .setColor('#0E7C7B') // vert moderne
+            .setTitle(`🕌 Prayer Times — ${city}, ${country}`)
+            .setDescription(description)
             .addFields(
-               { name: ':clock1: **Fajr**', value: `${this.getTimesFromIsoDatetime(data.Fajr, data[timezone])}`, inline: true },
-               { name: ':clock2: **Sunrise**', value: ` ${this.getTimesFromIsoDatetime(data.Sunrise, data[timezone])}`, inline: true },
-               { name: ':clock3: **Dhuhr**', value: `${this.getTimesFromIsoDatetime(data.Dhuhr, data[timezone])}`, inline: true },
-               { name: ':clock4: **Asr**', value: `${this.getTimesFromIsoDatetime(data.Asr, data[timezone])}`, inline: true },
-               { name: ':clock5: **Maghrib**', value: `${this.getTimesFromIsoDatetime(data.Maghrib, data[timezone])}`, inline: true },
-               { name: ':clock6: **Isha**', value: `${this.getTimesFromIsoDatetime(data.Isha, data[timezone])}`, inline: true },
+               formattedPrayers.map(p => ({
+                  name: `${p.emoji} ${p.name}`,
+                  value: `\`${p.formatted}\``,
+                  inline: true
+               }))
             )
-            .setURL(vars.topggUrl)
-            .setFooter({ text: vars.footerText });
+            .setFooter({
+               text: `MuslimBot • Stay consistent 🤍`
+            })
+            .setTimestamp();
+
          return interaction.reply({ embeds: [embed] });
       })
       .catch((error) => {
@@ -83,7 +120,7 @@ module.exports.run = (_client, interaction) => {
                   .setTitle('Location not found')
                   .setColor(vars.errorColor),
             ],
-            ephemeral: true,
+            flags: MessageFlags.Ephemeral,
          });
       });
 };
