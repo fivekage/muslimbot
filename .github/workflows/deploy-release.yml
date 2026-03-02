@@ -24,7 +24,7 @@ permissions: write-all
 jobs:
   check_updates:
     runs-on: ubuntu-latest
-
+    name: Check if package.json and changelog.md were updated
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -186,10 +186,6 @@ jobs:
           tags: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.create_release.outputs.version }}
           labels: ${{ steps.meta.outputs.labels }}
-
-      - name: Save Docker Image Metadata
-        id: image-metadata
-        run: echo "tags=${{ steps.meta.outputs.tags }}" >> $GITHUB_ENV
 
       - name: Generate artifact attestation
         uses: actions/attest-build-provenance@v1
