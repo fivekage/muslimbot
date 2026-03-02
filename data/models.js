@@ -43,6 +43,11 @@ module.exports = {
             type: DataTypes.BOOLEAN,
             defaultValue: true,
          },
+         dmBlocked: {
+            type: DataTypes.BOOLEAN,
+            defaultValue: false,
+            allowNull: false,
+         },
       });
 
       const subscriptionsModel = sequelize.define('Subscriptions', {

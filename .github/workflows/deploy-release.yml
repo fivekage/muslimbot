@@ -22,7 +22,7 @@ defaults:
 permissions: write-all
 
 jobs:
-  check_updates:
+  check-updates:
     runs-on: ubuntu-latest
     name: Check if package.json and changelog.md were updated
     steps:
@@ -73,9 +73,9 @@ jobs:
             echo "changelog.md updated."
           fi
 
-  create_release:
+  create-release:
     runs-on: ubuntu-latest
-    needs: check_updates
+    needs: check-updates
     name: Create a new Release
     outputs:
       version: ${{ steps.get_version.outputs.version }}
@@ -157,8 +157,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  deploy_packages:
-    needs: [check_updates, create_release]
+  deploy-packages:
+    needs: [check-updates, create-release]
     runs-on: ubuntu-latest
     name: Deploy Docker Package Release
     steps:
@@ -184,7 +184,7 @@ jobs:
           context: .
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.create_release.outputs.version }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.create-release.outputs.version }}
           labels: ${{ steps.meta.outputs.labels }}
 
       - name: Generate artifact attestation

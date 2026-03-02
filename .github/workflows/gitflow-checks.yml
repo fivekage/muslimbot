@@ -11,7 +11,7 @@ permissions:
   security-events: write
 
 jobs:
-  check_commits:
+  gitflow-checks:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
