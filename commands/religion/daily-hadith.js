@@ -1,4 +1,4 @@
-const { EmbedBuilder, ApplicationCommandOptionType, ChannelType, PermissionsBitField } = require('discord.js');
+const { EmbedBuilder, MessageFlags, ApplicationCommandOptionType, ChannelType, PermissionsBitField } = require('discord.js');
 const { guildsModel } = require('../../data/models.js');
 const logger = require('../../utils/logger.js');
 const vars = require('../_general/vars.js');
@@ -42,7 +42,7 @@ module.exports.run = async (client, interaction) => {
    if (!interaction.inGuild()) {
       return interaction.reply({
          content: 'This command is only available in a server',
-         ephemeral: true,
+         flags: MessageFlags.Ephemeral,
       });
    }
 
@@ -51,7 +51,7 @@ module.exports.run = async (client, interaction) => {
    if (hadithEnabled === null) {
       return interaction.reply({
          content: 'You must specify if you want to enable or disable daily hadiths',
-         ephemeral: true,
+         flags: MessageFlags.Ephemeral,
       });
    }
 
@@ -60,7 +60,7 @@ module.exports.run = async (client, interaction) => {
    if (hadithEnabled && channelSelected === null) {
       return interaction.reply({
          content: 'You must specify a channel where to send daily hadiths',
-         ephemeral: true,
+         flags: MessageFlags.Ephemeral,
       });
    }
 
@@ -74,7 +74,7 @@ module.exports.run = async (client, interaction) => {
       logger.error(`Error while fetching guild ${interaction.guild.id} - ${error}`);
       return interaction.reply({
          content: 'An error occurred while fetching the guild',
-         ephemeral: true,
+         flags: MessageFlags.Ephemeral,
       });
    });
    if (created) {

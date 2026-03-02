@@ -1,4 +1,4 @@
-const { EmbedBuilder, ApplicationCommandOptionType } = require('discord.js');
+const { EmbedBuilder, ApplicationCommandOptionType, MessageFlags } = require('discord.js');
 const logger = require('../../utils/logger.js');
 const vars = require('../_general/vars.js');
 const { HadithsAPI } = require('../../apis/hadiths_api.js');
@@ -49,7 +49,7 @@ module.exports.run = async (_client, interaction) => {
    if (book === null || chapterNumber === null || hadithNumber === null) {
       return interaction.reply({
          content: 'You must specify the book, chapter and hadith number',
-         ephemeral: true,
+         flags: MessageFlags.Ephemeral,
       });
    }
    logger.info(`Hadith requested: ${book} - Chapter: ${chapterNumber} - Hadith: ${hadithNumber}`);
@@ -57,13 +57,13 @@ module.exports.run = async (_client, interaction) => {
    // Get the hadith from the API
    const hadith = (await hadithsAPI.getHadith(book, chapterNumber, hadithNumber).catch(error => {
       logger.error('Error during retrieve hadith', error);
-      return interaction.reply({ content: 'An error occurred while retrieving the hadith', ephemeral: true });
+      return interaction.reply({ content: 'An error occurred while retrieving the hadith', flags: MessageFlags.Ephemeral });
    }));
 
 
 
    if (!hadith) {
-      return interaction.reply({ content: 'Hadith not found', ephemeral: true });
+      return interaction.reply({ content: 'Hadith not found', flags: MessageFlags.Ephemeral });
    }
 
    // Send a message to the user

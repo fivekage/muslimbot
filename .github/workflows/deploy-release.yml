@@ -1,9 +1,9 @@
-name: Deploy Docker Package & Release
+name: Deploy Docker Package & Create Release
 
 on:
   push:
-    branches:
-      - release
+    tags:
+      - "v*" # Exemple : v1.0.0, v2.3.4
     paths-ignore:
       - "**/*.md"
       - "LICENSE"

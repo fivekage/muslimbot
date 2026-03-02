@@ -167,6 +167,8 @@ If you like to contributing to the project, head over to my [Github](https://git
 
   ***
 
+---
+
 ## [1.2.12] - 2025-03-18
 
 ### Added
@@ -177,6 +179,8 @@ If you like to contributing to the project, head over to my [Github](https://git
 ## Changed
 
 - Rework CI/CD pipeline
+
+---
 
 ## [1.2.13] - 2025-07-27
 
@@ -193,3 +197,13 @@ If you like to contributing to the project, head over to my [Github](https://git
 - Rework all hadiths code to be more readable and maintainable.
 - Update dependencies to latest versions.
 - Fixed `/subscribe` command (it was not working properly).
+
+---
+
+## [1.3.0] - 2026-02-03
+
+### Changed
+
+- Rework all ux/ui of the bot messages to be more user friendly and attractive.
+- Add more details in the messages
+- Update all dependencies
