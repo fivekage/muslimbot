@@ -207,3 +207,15 @@ If you like to contributing to the project, head over to my [Github](https://git
 - Rework all ux/ui of the bot messages to be more user friendly and attractive.
 - Add more details in the messages
 - Update all dependencies
+
+---
+
+## [1.3.1] - 2026-02-03
+
+### Changed
+
+- Track users who have blocked the bot in DM and avoid sending them messages that will fail.
+- Fix github workflow to avoid running release job
+- Optimize code related to prayer notifications sendings. It will now send the notifications in batch every 5 minutes to avoid hitting the rate limit of the API.
+- Rework ui/ux of the prayer notifications messages to be more attractive and informative.
+- Update node to 24 lts version

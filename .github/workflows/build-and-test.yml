@@ -23,13 +23,7 @@ permissions:
   security-events: write
 
 jobs:
-  check_commits:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-  build_docker_image:
+  build-docker-image:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

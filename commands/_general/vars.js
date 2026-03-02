@@ -11,6 +11,13 @@ module.exports = {
    greenColor: '#28A745',
    redColor: '#C92A2A',
    errorColor: '#E53E3E',
+   prayerColor: {
+      'Fajr': '#FFDDC1',
+      'Dhuhr': '#FFD700',
+      'Asr': '#FFA500',
+      'Maghrib': '#FF4500',
+      'Isha': '#1E1E2F'
+   },
    githubUrl: 'https://github.com/fivekage/muslimbot',
    topggUrl: 'https://top.gg/bot/1183399354166415481',
    paypalDonationUrl: paypalDonationUrl,
