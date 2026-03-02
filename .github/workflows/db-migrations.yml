@@ -1,4 +1,4 @@
-name: Deploy DB Migrations
+name: Deploy DB Migrations to Production
 
 on:
   workflow_call:
