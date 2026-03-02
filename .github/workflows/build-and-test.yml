@@ -10,6 +10,12 @@ on:
     branches:
       - main
       - dev
+    paths-ignore:
+      - "**/*.md"
+      - "LICENSE"
+      - "docs/**"
+      - ".gitignore"
+      - ".github/**"
 
 permissions:
   contents: read
@@ -31,4 +37,3 @@ jobs:
       - name: Build Docker image
         run: |
           docker build -t muslimbot .
-          
