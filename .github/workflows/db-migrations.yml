@@ -1,5 +1,8 @@
+name: Deploy DB Migrations
+
 on:
   workflow_call:
+  workflow_dispatch:
 
 env:
   env: production
