@@ -12,25 +12,26 @@ const { prayersMessages, getPrayerMessage } = require('../utils/prayers_messages
 const jobsScheduled = {};
 
 const schedulePrayerNotifications = async (client, subscription, prayer, prayerDateTime, isRamadan, isEidUlFitr) => {
-   const userid = subscription.User.userId;
+   const discordUserId = subscription.User.userId;
    const NotificationsCtor = notificationsModel();
    const currentDate = new Date();
 
    if (prayerDateTime < currentDate) return;
+   const formattedTime = prayerDateTime.toLocaleTimeString([], {
+      hour: '2-digit',
+      minute: '2-digit',
+   });
 
    // Set the time to the start of the day (midnight)
    currentDate.setHours(0, 0, 0, 0);
 
-   // Check if the notification is already scheduled
-   if (jobsScheduled[userid]?.includes(prayer)) {
-      return;
-   }
    // Schedule notification
-   schedule.scheduleJob(prayerDateTime, ((p, city, country) => {
-      client.users.fetch(userid).then((user) => {
+   schedule.scheduleJob(prayerDateTime, (async (p, city, country) => {
+      try {
+         const user = await client.users.fetch(discordUserId);
          const embed = new EmbedBuilder()
             .setTitle(`🕌 ${p} — ${city}, ${country}`)
-            .setColor(vars.prayerColor[prayer] ?? vars.primaryColor)
+            .setColor(vars.prayerColor[p] ?? vars.primaryColor)
             .setDescription(`> ⏰ \`${formattedTime}\`\n> 🌙 Remember to pray and stay connected!`)
             .addFields(
                { name: 'Location', value: `${city}, ${country}`, inline: true },
@@ -58,7 +59,7 @@ const schedulePrayerNotifications = async (client, subscription, prayer, prayerD
          // Send notification then update notification to sent in database and remove job from scheduled jobs
          user.send({ embeds: [embed] })
             .then(() => {
-               logger.info(`Notification sent for user ${userid} at ${prayerDateTime} for prayer ${p} located at ${city}, ${country} `);
+               logger.info(`Notification sent for user ${discordUserId} at ${prayerDateTime} for prayer ${p} located at ${city}, ${country} `);
                // Update notification to sent
                NotificationsCtor.findOne({
                   where: {
@@ -69,50 +70,61 @@ const schedulePrayerNotifications = async (client, subscription, prayer, prayerD
                      if (notification) {
                         notification.sent = true;
                         notification.save();
-                        jobsScheduled[userid].splice(jobsScheduled[userid].indexOf(p), 1); // Remove prayer from scheduled job
+                        const index = jobsScheduled[discordUserId].indexOf(p);
+                        if (index !== -1) {
+                           jobsScheduled[discordUserId].splice(index, 1);
+                        }
                      } else {
-                        logger.warn(`Notification not found for user ${userid}`);
+                        logger.warn(`Notification not found for user ${discordUserId}`);
                      }
                   }).catch(() => {
-                     logger.error(`Error during update notification for user ${userid} at ${prayerDateTime} for prayer ${p} located at ${city}, ${country} `);
+                     logger.error(`Error during update notification for user ${discordUserId} at ${prayerDateTime} for prayer ${p} located at ${city}, ${country} `);
                   });
             })
             .catch(async (error) => {
                if (error.code === 50007 || error.code === 50278) {
-                  logger.info(`DM blocked for user ${userid} at ${prayerDateTime} for prayer ${p} located at ${city}, ${country}`);
+                  logger.info(`DM blocked for user ${discordUserId} at ${prayerDateTime} for prayer ${p} located at ${city}, ${country}`);
                   await usersModel().update(
                      { dmBlocked: true },
-                     { where: { userId: userid } }
+                     { where: { userId: discordUserId } }
                   );
                }
                else {
-                  logger.error(`Cannot send notification to user ${userid} at ${prayerDateTime} for prayer ${p} located at ${city}, ${country}`, error);
+                  logger.error(`Cannot send notification to user ${discordUserId} at ${prayerDateTime} for prayer ${p} located at ${city}, ${country}`, error);
                }
             });
-      });
+      } catch (error) {
+         logger.error(`Error during send notification for user ${discordUserId} at ${prayerDateTime} for prayer ${p} located at ${city}, ${country}`, error);
+      }
    }).bind(null, prayer, subscription.city, subscription.country));
 
-   if (!jobsScheduled[userid]) jobsScheduled[userid] = [];
-   jobsScheduled[userid].push(prayer);
+   if (!jobsScheduled[discordUserId]) jobsScheduled[discordUserId] = [];
+   jobsScheduled[discordUserId].push(prayer);
 
    // Create notification if not exists
-   const [notification, created] = await NotificationsCtor.findOrCreate({
-      where: {
-         prayer, userId: subscription.userId, subscriptionId: subscription.id, createdAt: { [Op.gt]: currentDate },
-      },
-      defaults: {
-         prayer,
-         userId: subscription.userId,
-         subscriptionId: subscription.id,
-         sent: false,
-         createdAt: new Date(),
-      },
-   }).catch((error) => {
-      logger.error(`Error during create notification for user ${userid}`, error);
-   });
-   if (created) {
-      // created will be true if a new user was created
-      logger.info(`Notification ${notification.id} created for user ${userid}`);
+   let notification, created;
+   try {
+      [notification, created] = await NotificationsCtor.findOrCreate({
+         where: {
+            prayer,
+            userId: subscription.userId,
+            subscriptionId: subscription.id,
+            createdAt: { [Op.gt]: currentDate },
+         },
+         defaults: {
+            prayer,
+            userId: subscription.userId,
+            subscriptionId: subscription.id,
+            sent: false,
+            createdAt: new Date(),
+         },
+      });
+
+      if (created) {
+         logger.info(`Notification ${notification.id} created for user ${discordUserId}`);
+      }
+   } catch (error) {
+      logger.error(`Error during create notification for user ${discordUserId}`, error);
    }
 };
 
@@ -139,6 +151,8 @@ const schedulePrayersForTheDay = async (client) => {
       //  Very light sleep to avoid Discord rate limits, but faster
       await sleep(100); // 0.1s
 
+      const discordUserId = subscription.User.userId;
+
       try {
          const prayers = await retrievePrayersOfTheDay(subscription.city, subscription.country, 2, true);
          const isRamadan = isRamadanMonth(prayers);
@@ -146,10 +160,10 @@ const schedulePrayersForTheDay = async (client) => {
 
          Object.keys(prayers).forEach((prayer) => {
             if (Object.keys(prayersMessages).includes(prayer)) {
-               if (!jobsScheduled[subscription.User.userId]) jobsScheduled[subscription.User.userId] = [];
+               if (!jobsScheduled[discordUserId]) jobsScheduled[discordUserId] = [];
 
                // 🔹 Ne planifie que si la prière n'est pas déjà programmée
-               if (!jobsScheduled[subscription.User.userId].includes(prayer)) {
+               if (!jobsScheduled[discordUserId].includes(prayer)) {
                   schedulePrayerNotifications(
                      client,
                      subscription,
@@ -162,15 +176,15 @@ const schedulePrayersForTheDay = async (client) => {
             }
          });
       } catch (error) {
-         logger.error(`Error during retrieve prayers for user ${subscription.User.userId} at ${subscription.city}, ${subscription.country}`, error);
+         logger.error(`Error during retrieve prayers for user ${discordUserId} at ${subscription.city}, ${subscription.country}`, error);
       } finally {
-         if (jobsScheduled[subscription.User.userId]) {
+         if (jobsScheduled[discordUserId]) {
             logger.debug(
-               `Job scheduled for user ${subscription.User.userId} at ${subscription.city}, ${subscription.country}:`,
-               jobsScheduled[subscription.User.userId]
+               `Job scheduled for user ${discordUserId} at ${subscription.city}, ${subscription.country}:`,
+               jobsScheduled[discordUserId]
             );
          } else {
-            logger.debug(`No job scheduled for user ${subscription.User.userId} at ${subscription.city}, ${subscription.country}`);
+            logger.debug(`No job scheduled for user ${discordUserId} at ${subscription.city}, ${subscription.country}`);
          }
       }
    }
@@ -188,8 +202,7 @@ const schedulePrayerNewSubscription = async (client, subscription) => {
       const isEidUlFitr = isEidUlFitrEvent(prayers);
       Object.keys(prayers).forEach((prayer) => {
          if (Object.keys(prayersMessages).includes(prayer)) {
-            const prayerDateTime = new Date(prayers[prayer]);
-            schedulePrayerNotifications(client, subscriptionWithUser, prayer, prayerDateTime, isRamadan, isEidUlFitr);
+            schedulePrayerNotifications(client, subscriptionWithUser, prayer, new Date(prayers[prayer]), isRamadan, isEidUlFitr);
             logger.debug(`Job scheduled for new user ${subscriptionWithUser.User.userId} : `, jobsScheduled[subscriptionWithUser.User.userId]);
          }
       });
@@ -198,8 +211,8 @@ const schedulePrayerNewSubscription = async (client, subscription) => {
    }
 };
 
-const isRamadanMonth = (data) => data.hijri.month.number == 9; // 9 is the month of Ramadan
-const isEidUlFitrEvent = (data) => data.hijri.holidays[0] == 'Eid-ul-Fitr'; // Constant String for Eid ul Fitr
+const isRamadanMonth = (data) => data?.hijri?.month?.number === 9; // 9 is the month of Ramadan
+const isEidUlFitrEvent = (data) => data?.hijri?.holidays?.[0] === 'Eid-ul-Fitr';; // Constant String for Eid ul Fitr
 
 
 module.exports = {

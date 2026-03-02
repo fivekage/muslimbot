@@ -219,3 +219,11 @@ If you like to contributing to the project, head over to my [Github](https://git
 - Optimize code related to prayer notifications sendings. It will now send the notifications in batch every 5 minutes to avoid hitting the rate limit of the API.
 - Rework ui/ux of the prayer notifications messages to be more attractive and informative.
 - Update node to 24 lts version
+
+---
+
+## [1.3.2] - 2026-02-04
+
+### Changed
+
+- Fix notifications sending, sorry for the inconvenience 🙏.

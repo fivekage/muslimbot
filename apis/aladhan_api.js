@@ -18,7 +18,7 @@ module.exports.AladhanAPI = class {
     */
    async getPrayerTimes(city, country, retries, iso8601 = true) {
       const response = await fetch(`${this.baseUrl}/timingsByCity?city=${city}&country=${country}&method=12&iso8601=${iso8601 ? 'true' : 'false'}`);
-
+      const json = await response.json();
       if (!response.ok && response.code != 200) { // If the response is not ok
          if (retries > 0) {
             // Retry with country undefined to get the default country and look only for the city
@@ -27,7 +27,7 @@ module.exports.AladhanAPI = class {
          throw new Error(JSON.stringify(json));
       }
 
-      const data = (await response.json()).data;
+      const data = json.data;
 
       return {
          ...data.timings,
