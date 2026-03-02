@@ -10,6 +10,7 @@ env:
 jobs:
   deploy-db-migrations:
     runs-on: ubuntu-latest
+    environment: on-premise
     steps:
       - uses: actions/checkout@v4
       - name: Set up Node.js
@@ -19,12 +20,20 @@ jobs:
           cache: "npm"
       - name: Install dependencies
         run: npm install
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
       - name: Set up SSH Tunnel
         run: |
-          ssh -f -N -L 3306:${{ secrets.DB_HOST }}:3306 ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}
+          ssh -o ExitOnForwardFailure=yes -f -N \
+            -L 13306:127.0.0.1:3306 \
+            ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}
       - name: Run migrations
         run: |
           echo "Running migrations"
-          npx sequelize-cli db:migrate --url "mariadb://${{ secrets.DB_USERNAME }}:${{ secrets.DB_PASSWORD }}@localhost:3306/${{ secrets.DB_DATABASE }}"
+          npx sequelize-cli db:migrate --url "mariadb://${{ secrets.DB_USERNAME }}:${{ secrets.DB_PASSWORD }}@localhost:13306/${{ secrets.DB_DATABASE }}"
         env:
           NODE_ENV: ${{ env.env }}
