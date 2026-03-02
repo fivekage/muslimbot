@@ -22,43 +22,60 @@ defaults:
 permissions: write-all
 
 jobs:
-  check-updates:
+  check_updates:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Get the current branch package.json version
+      - name: Get current and previous tag
+        id: tags
         run: |
-          jq -r '.version' package.json > current_version.txt
+          git fetch --tags --force
 
-      - name: Get the main branch package.json version
-        run: |
-          git fetch origin main
-          git show origin/main:package.json | jq -r '.version' > main_version.txt
+          CURRENT_TAG=${GITHUB_REF#refs/tags/}
+          echo "Current tag: $CURRENT_TAG"
 
-      - name: Compare package.json versions
-        run: |
-          if diff -q current_version.txt main_version.txt > /dev/null; then
-            echo "Error: Version has not been updated in package.json"
+          PREVIOUS_TAG=$(git tag --sort=-creatordate | grep -A1 "^$CURRENT_TAG$" | tail -n1)
+
+          if [ -z "$PREVIOUS_TAG" ]; then
+            echo "No previous tag found"
             exit 1
-          else
-            echo "Version has been updated."
           fi
 
-      - name: Check if changelog.md has been modified
+          echo "Previous tag: $PREVIOUS_TAG"
+
+          echo "current=$CURRENT_TAG" >> $GITHUB_OUTPUT
+          echo "previous=$PREVIOUS_TAG" >> $GITHUB_OUTPUT
+
+      - name: Compare package.json between tags
         run: |
-          git fetch origin main
-          if git diff --exit-code origin/main..HEAD -- changelog.md; then
-            echo "Error: changelog.md has not been updated."
+          git show ${{ steps.tags.outputs.previous }}:package.json | jq -r '.version' > old_version.txt
+          git show ${{ steps.tags.outputs.current }}:package.json | jq -r '.version' > new_version.txt
+
+          if diff -q old_version.txt new_version.txt > /dev/null; then
+            echo "Error: Version did not change between tags"
             exit 1
           else
-            echo "changelog.md has been updated."
+            echo "Version changed correctly."
+          fi
+
+      - name: Check changelog diff between tags
+        run: |
+          if git diff --exit-code \
+            ${{ steps.tags.outputs.previous }} \
+            ${{ steps.tags.outputs.current }} \
+            -- changelog.md; then
+            echo "Error: changelog.md not updated between tags"
+            exit 1
+          else
+            echo "changelog.md updated."
           fi
 
   create_release:
     runs-on: ubuntu-latest
+    needs: check_updates
     name: Create a new Release
     outputs:
       version: ${{ steps.get_version.outputs.version }}
@@ -141,7 +158,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   deploy_packages:
-    needs: create_release
+    needs: [check_updates, create_release]
     runs-on: ubuntu-latest
     name: Deploy Docker Package Release
     steps:
@@ -167,7 +184,6 @@ jobs:
           context: .
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.create_release.outputs.version }}
           labels: ${{ steps.meta.outputs.labels }}
 
