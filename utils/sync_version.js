@@ -14,7 +14,9 @@ module.exports = {
 
       const embed = new EmbedBuilder()
          .setTitle(`🆕 New Version v${version}`)
-         .setDescription(latestChangelog.substring(0, 1000))
+         .setDescription(`
+            Click the button below to view the full changelog on GitHub.\n\n
+            ℹ️ To enable or disable notifications for future release notes, use the **/release_notes** command.`)
          .setColor(vars.primaryColor)
          .setFooter({ text: 'MuslimBot 🕋 - Click the buttons to interact' })
          .setTimestamp();

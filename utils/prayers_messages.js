@@ -61,6 +61,14 @@ const ramadanMessage = {
    ],
 };
 
+const footerTexts = {
+   Fajr: "Begin with intention 🤍",
+   Dhuhr: "Pause & reconnect 🌿",
+   Asr: "Stay mindful ✨",
+   Maghrib: "Reflect with gratitude 🌇",
+   Isha: "End with serenity 🌙",
+};
+
 // Helper function to get a random message for a prayer
 const getPrayerMessage = (prayer, isRamadan = false) => {
    if (isRamadan && ramadanMessage[prayer]) {
@@ -74,4 +82,4 @@ const getPrayerMessage = (prayer, isRamadan = false) => {
    return 'May your prayer bring peace and guidance.';
 };
 
-module.exports = { prayersMessages, ramadanMessage, getPrayerMessage };
+module.exports = { prayersMessages, ramadanMessage, getPrayerMessage, footerTexts };

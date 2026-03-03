@@ -16,23 +16,38 @@ module.exports.AladhanAPI = class {
     * @param {boolean} iso8601 If the date should be in iso8601 format
     * @returns The prayer times of the day
     */
-   async getPrayerTimes(city, country, retries, iso8601 = true) {
-      const response = await fetch(`${this.baseUrl}/timingsByCity?city=${city}&country=${country}&method=12&iso8601=${iso8601 ? 'true' : 'false'}`);
-      const json = await response.json();
-      if (!response.ok && response.code != 200) { // If the response is not ok
-         if (retries > 0) {
-            // Retry with country undefined to get the default country and look only for the city
-            return await this.getPrayerTimes(city, '0', retries - 1, iso8601);
+   async getPrayerTimes(city, country, retries = 2, iso8601 = true) {
+      const url = `${this.baseUrl}/timingsByCity?city=${encodeURIComponent(city)}&country=${encodeURIComponent(country)}&method=12&iso8601=${iso8601 ? 'true' : 'false'}`;
+
+      for (let attempt = 0; attempt <= retries; attempt++) {
+         try {
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 8000); // 8s timeout
+
+            const response = await fetch(url, { signal: controller.signal });
+            clearTimeout(timeout);
+
+            if (!response.ok) {
+               throw new Error(`HTTP ${response.status}`);
+            }
+
+            const json = await response.json();
+            const data = json.data;
+
+            return {
+               ...data.timings,
+               ...data.meta,
+               ...data.date,
+            };
+
+         } catch (error) {
+            if (attempt === retries) {
+               throw error;
+            }
+
+            // petite pause avant retry
+            await new Promise(r => setTimeout(r, 1500));
          }
-         throw new Error(JSON.stringify(json));
-      }
-
-      const data = json.data;
-
-      return {
-         ...data.timings,
-         ...data.meta,
-         ...data.date,
       }
    }
 

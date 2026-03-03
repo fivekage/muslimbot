@@ -222,8 +222,19 @@ If you like to contributing to the project, head over to my [Github](https://git
 
 ---
 
-## [1.3.2] - 2026-02-04
+## [1.3.2] - 2026-03-03
 
 ### Changed
 
 - Fix notifications sending, sorry for the inconvenience 🙏.
+
+---
+
+## [1.3.3] - 2026-03-03
+
+### Changed
+
+- Change again the notifications prayer ux/ui.
+- Add a random message in each prayer notification to make it more attractive and less repetitive.
+- Optimize code to avoid api rate limits.
+- Hide changelog details in the notifications messages and add a link to the full changelog in the release notes.

@@ -7,7 +7,7 @@ const vars = require('../commands/_general/vars.js');
 const logger = require('../utils/logger.js');
 const { retrievePrayersOfTheDay } = require('../utils/retrieve_prayers.js');
 const { sleep } = require('../utils/sleep.js');
-const { prayersMessages, getPrayerMessage } = require('../utils/prayers_messages.js');
+const { prayersMessages, getPrayerMessage, footerTexts } = require('../utils/prayers_messages.js');
 // Store job scheduled for each user
 const jobsScheduled = {};
 
@@ -17,10 +17,6 @@ const schedulePrayerNotifications = async (client, subscription, prayer, prayerD
    const currentDate = new Date();
 
    if (prayerDateTime < currentDate) return;
-   const formattedTime = prayerDateTime.toLocaleTimeString([], {
-      hour: '2-digit',
-      minute: '2-digit',
-   });
 
    // Set the time to the start of the day (midnight)
    currentDate.setHours(0, 0, 0, 0);
@@ -29,15 +25,16 @@ const schedulePrayerNotifications = async (client, subscription, prayer, prayerD
    schedule.scheduleJob(prayerDateTime, (async (p, city, country) => {
       try {
          const user = await client.users.fetch(discordUserId);
+         const randomMessage = getPrayerMessage(p, isRamadan);
+
          const embed = new EmbedBuilder()
-            .setTitle(`🕌 ${p} — ${city}, ${country}`)
             .setColor(vars.prayerColor[p] ?? vars.primaryColor)
-            .setDescription(`> ⏰ \`${formattedTime}\`\n> 🌙 Remember to pray and stay connected!`)
-            .addFields(
-               { name: 'Location', value: `${city}, ${country}`, inline: true },
-               { name: 'Time (local)', value: `${formattedTime}`, inline: true },
+            .setTitle(`🕌 ${p}`)
+            .setDescription(`
+               **${randomMessage}**\n
+               🤲 *May Allah accept your prayer.*`
             )
-            .setFooter({ text: 'MuslimBot • Stay consistent 🤍' })
+            .setFooter({ text: `${footerTexts[p] ?? "Stay consistent 🤍"} • MuslimBot` })
             .setTimestamp();
 
          // Add Ramadan message
@@ -129,7 +126,7 @@ const schedulePrayerNotifications = async (client, subscription, prayer, prayerD
 };
 
 const dailyCallSchedulePrayers = (client) => {
-   const ruleCron = '*/5 * * * *'; // Every 5 minutes
+   const ruleCron = '*/30 * * * *'; // Every 5 minutes
    const job = schedule.scheduleJob(ruleCron, () => {
       schedulePrayersForTheDay(client);
    });
@@ -148,8 +145,8 @@ const schedulePrayersForTheDay = async (client) => {
    });
 
    for (const subscription of userSubscriptions) {
-      //  Very light sleep to avoid Discord rate limits, but faster
-      await sleep(100); // 0.1s
+      //  Sleep to avoid Discord rate limits
+      await sleep(500); // 0.5s
 
       const discordUserId = subscription.User.userId;
 
